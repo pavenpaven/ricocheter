@@ -1,0 +1,11 @@
+starting_filename = Level/tile_map
+starting_actor_filename = Level/actors
+starting_segname = Spawn
+speed = 4.5
+pine_music = Sound/Fog.wav
+cave_music = Sound/Dusk2.wav
+desert_music = Sound/destert_blues_winds_are_long.wav
+title_music = Sound/Piano_acoustic_limbo.wav
+is_music_on = False
+music_volume = 0.0
+cheats = True
