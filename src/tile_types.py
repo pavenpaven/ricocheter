@@ -73,3 +73,4 @@ Tile_type("Art/Cute_boost_arow_north", False, "c", animation=True, frame_delay=2
 Tile_type("Art/Cute_boost_arow_east", False, "C", animation=True, frame_delay=2)
 Tile_type("Art/Cute_boost_arow_south", False, "b", animation=True, frame_delay=2)
 Tile_type("Art/Cute_boost_arow_west", False, "B", animation=True, frame_delay=2)
+Tile_type('Art/Cute_death_ani', False, 'o', animation=True, frame_delay=6)
