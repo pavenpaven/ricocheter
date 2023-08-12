@@ -6,14 +6,18 @@ import src.conf as conf
 import src.state as state
 import key
 import src.create_map as create_map
+import time
 
 tile = world.tile
 
 def overworld_handler(window, framecount, event_list, music) -> state.State:
   scene.state = state.State.OVERWORLD
   if not scene.tiles:
+      start = time.perf_counter()
       spawn = create_map.generate_map(scene, music)
       scene.load_room("Level/gamefile", spawn, music)
+      end = time.perf_counter()
+      print(f"Map gen time: {end-start}")
   graphics(window, music, framecount)
   check_key(event_list, framecount, music)
   return scene.state

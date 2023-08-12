@@ -113,7 +113,7 @@ class Map:
                 y += tile
 
             for i in self.actors:
-              i.render(self.surface)
+              i.render(self.surface, framecount)
             
             imag = player.render(framecount)
             self.surface.blit(imag, (player.rect.x, player.rect.y))
@@ -155,5 +155,12 @@ class Map:
             self.tiles.pop(len(self.tiles)-1)
             tuples = zip(*self.tiles[::-1])
             self.tiles = [list(i) for i in tuples]
+            types = tile_types.Tile_type.types
+            def magic(tile_type: tile_types.Tile_type) -> tile_types.Tile_type: # what the actual
+                x = tile_types.get_ordered_family(tile_type, tile_type)
+                return x[(x.index(tile_type)+1)%len(x)]
+
+            self.tiles = [[magic(types[i]).index for i in j] for j in self.tiles]
+
             self.tiles.append([])
             self.rotate(n-1)

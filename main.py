@@ -8,6 +8,7 @@ import src.state as state
 import state_handler
 import src.music
 
+
 pygame.init()
 pygame.display.init()
 window = pygame.display.set_mode((608,700))

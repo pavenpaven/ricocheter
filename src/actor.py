@@ -1,7 +1,8 @@
 import pygame
 import src.state as state
+import src.animation as animation
 
-tile=30
+tile=38
 
 def load_sprites(segname, filename, change_state):
   with open(filename, "r") as fil:
@@ -84,8 +85,15 @@ class Sprite:
   def player_action(self):
     pass
     
-  def render(self, scene):
+  def render(self, scene, framecount):
     scene.blit(self.texture, self.pos)
 
+class Earth(Sprite):
+    ani = animation.Animation("Art/Cute_earth_with_out_space", (2.5*tile, 2.5*tile), 15) 
+    name = "earth"
+    def render(self, scene, framecount):
+        self.ani.update(framecount)
+        scene.blit(self.ani.texture, self.pos)
+
 ACTOR_SAVE_DATA = []
-SPRITE_CLASSES = []
+SPRITE_CLASSES = [Earth]

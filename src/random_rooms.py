@@ -77,7 +77,7 @@ def rotate(n:int, x:Pos) -> Pos:
     else:
         return x
 
-get_orientations: Callable[[Pos, list[Pos]], list[Orientation]] = lambda x,s: [Orientation(i) for i in range(4) if vec2_add(x, rotate(i, (0, -1))) in s]
+get_orientations: Callable[[Pos, list[Pos]], list[Orientation]] = lambda x,s: [Orientation(i) for i in range(4) if vec2_add(x, rotate(i, (0, 1))) in s]
 
 def get_rooms(g: Graph[tuple[Room_prototype, Pos]]) -> list[Room]:
     neighbours_pos = [[j[1] for j in g.neighbours(i)] for i in g.nodes]

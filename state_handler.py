@@ -13,8 +13,8 @@ def state_handling(state, scene, framecount, event_list, music) -> st.State:
   elif state == st.State.TITLE:
     if previous.state != state:
       title.startup(music)
-      return title.title_handler(scene, framecount, event_list)
-    return title.title_handler(scene, framecount, event_list)
+      return title.title_handler(scene, framecount, event_list, music)
+    return title.title_handler(scene, framecount, event_list, music)
   elif state == st.State.GAMEOVER:
     if previous.state != state:
       gameover.startup(music)

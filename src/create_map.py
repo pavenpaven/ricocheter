@@ -37,12 +37,15 @@ def f(table: list[tuple[T, int, T | None]], node: T|None) -> List[T]:
     return []
   return f(table, table[lookup(table, node)][2])+[node]
 
-def dijkstra(graph: Graph[T], start: T, dest: T) -> List[T]|None:
+def dist(a:Pos ,b:Pos) -> float:
+    return math.sqrt(((a[0]-b[0])**2) + ((a[1]-b[1])**2))
+
+def dijkstra(graph: Graph[Pos], start: Pos, dest: Pos) -> List[Pos] | None:
   visited = []
   unvisited = graph.nodes
   table = [(x, 10000, None) for x in filter(lambda x:x!=start, graph.nodes)] + [(start, 0, None)] #10000 == math.inf lol
   while unvisited:
-    table.sort(key = lambda x:x[1])
+    table.sort(key = lambda x:x[1] + dist(x[0], dest)) # a* i think
     node = list(filter(lambda x:x[0] in unvisited, table))[0]
     for i in graph.neighbours(node[0]):
       ind = lookup(table, i)

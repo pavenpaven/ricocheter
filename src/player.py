@@ -4,13 +4,16 @@ import src.world as world
 import src.tile_types as tile_types
 import src.actor as actor
 import src.animation as ani
+from src.create_map import rotate
 
 tile = world.tile
 
 ANIMATION_DELAY = 7
 TURNING_SPEED = 0.2
-ACCELERATION_SPEED = 0.25
-BREAK_DIVISION = 1.02
+ACCELERATION_SPEED = 0.40
+BREAK_DIVISION = 1.04
+MAX_SPEED = 15
+BOOSTER_ACCEL = 1
 
 NOCLIP = [0]
 
@@ -61,6 +64,11 @@ class Player:
   def walk(self, input_vector, scene, music): #input_vector is like (Forward, Right/Left, Break) wtf
     accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
     self.velocity = vec_add(self.velocity, accel_vector)
+    speed = math.sqrt((self.velocity[0]**2) + (self.velocity[1]**2))
+    if  speed > MAX_SPEED:
+        self.velocity = scaler_vec_mul(MAX_SPEED/speed, self.velocity)
+        
+
     travel_pos = vec_add((self.rect.x, self.rect.y), self.velocity)
     
     self.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.velocity) #magi
@@ -69,11 +77,14 @@ class Player:
     player_hitbox_x = ((travel_pos[0], self.rect.y), (travel_pos[0] + self.rect.size[0], self.rect.y + self.rect.height )) #FIXME
     player_hitbox_y = ((self.rect.x, travel_pos[1]), (self.rect.x + self.rect.size[0], travel_pos[1] + self.rect.height))
     if not NOCLIP[0]: 
-        can_go_x=check_collision(player_hitbox_x,scene, (pygame.Rect(player_hitbox_x[0], (self.rect.size[0], self.rect.size[1]/3))))
-        can_go_y=check_collision(player_hitbox_y,scene, (pygame.Rect(player_hitbox_y[0], (self.rect.size[0], self.rect.size[1]/3))))
+        can_go_x, booster_vec =check_collision(player_hitbox_x,scene, (pygame.Rect(player_hitbox_x[0], (self.rect.size[0], self.rect.size[1]/3))))
+        can_go_y, _=check_collision(player_hitbox_y,scene, (pygame.Rect(player_hitbox_y[0], (self.rect.size[0], self.rect.size[1]/3)))) #what the
     else:
+        booster_vec=(0,0)
         can_go_x = True
         can_go_y = True
+    
+    self.velocity = vec_add(self.velocity, booster_vec)
 
     if can_go_x:
         self.rect.x = travel_pos[0]
@@ -92,9 +103,15 @@ class Player:
 def check_collision(player_hitbox, scene, player_rect):
     tiles = get_touching_tiles(player_hitbox, scene)
     can_go = True
+    booster_vec = (0,0)
     for i in tiles:
-        if tile_types.Tile_type.types[scene.tiles[i[1]][i[0]]].collision:
+        tile_type = tile_types.Tile_type.types[scene.tiles[i[1]][i[0]]]
+        if tile_type.collision:
             can_go = False
+        if tile_type.letter in ["c", "C", "b", "B"]: #key codes for boosters
+            orientation = ["c", "C", "b", "B"].index(tile_type.letter)
+            booster_vec = vec_add(booster_vec, rotate(orientation, (0,-1*BOOSTER_ACCEL)))
+
 
     for i in scene.actors:
       if i.collision:  
@@ -103,8 +120,10 @@ def check_collision(player_hitbox, scene, player_rect):
       else:
         if player_rect.colliderect(pygame.Rect(i.pos,i.size)):
             i.step_on()
-        
-    return can_go
+    
+    
+
+    return can_go, booster_vec
   
 
 
