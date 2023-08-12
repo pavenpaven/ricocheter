@@ -5,11 +5,15 @@ import src.actor as actor
 import src.conf as conf
 import src.state as state
 import key
+import src.create_map as create_map
 
 tile = world.tile
 
 def overworld_handler(window, framecount, event_list, music) -> state.State:
   scene.state = state.State.OVERWORLD
+  if not scene.tiles:
+      spawn = create_map.generate_map(scene, music)
+      scene.load_room("Level/gamefile", spawn, music)
   graphics(window, music, framecount)
   check_key(event_list, framecount, music)
   return scene.state
@@ -56,4 +60,4 @@ imag2 = pygame.transform.scale(imag2, (20,18))  # lots of globals its essentialy
 
 
 
-jack = player.Player((200,300), "Art/Cute_ship_ani_2",(38,38), float(conf.conf_search("speed")))
+jack = player.Player((6.5*tile ,6.5*tile), "Art/Cute_ship_ani_2",(38,38), float(conf.conf_search("speed")))

@@ -148,3 +148,12 @@ class Map:
                     out += "\n"
                 n+=1
             return out
+        
+        def rotate(self, n: int) -> None:
+            if n == 0:
+                return None
+            self.tiles.pop(len(self.tiles)-1)
+            tuples = zip(*self.tiles[::-1])
+            self.tiles = [list(i) for i in tuples]
+            self.tiles.append([])
+            self.rotate(n-1)

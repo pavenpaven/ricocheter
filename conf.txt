@@ -1,4 +1,4 @@
-starting_filename = Level/tile_map
+starting_filename = Level/gamefile
 starting_actor_filename = Level/actors
 starting_segname = Spawn
 speed = 4.5

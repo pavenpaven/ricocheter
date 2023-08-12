@@ -49,6 +49,8 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
                     vec[1] +=-1
                 if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     vec[1] += 1
+                if event.key == pygame.K_r:
+                    scene.rotate(1)
                 if not is_loading_zone_mode:
                     if event.key == pygame.K_x:
                         curser.change_tile(1)

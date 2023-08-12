@@ -55,7 +55,7 @@ class Player:
       if x:
         x=x[0] #yes
         lz = scene.loading_zone[x]
-        scene.load_room("Level/tile_map", lz.segname, music)
+        scene.load_room("Level/gamefile", lz.segname, music)
         (self.rect.x, self.rect.y) = lz.spawn_pos
         
   def walk(self, input_vector, scene, music): #input_vector is like (Forward, Right/Left, Break) wtf
