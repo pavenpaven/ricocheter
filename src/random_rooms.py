@@ -10,11 +10,11 @@ Orientation = NewType("Orientation", int)
 T =TypeVar("T")  
 
 class Graph(Generic[T]): # directed
-    def __init__(self, nodes: Sequence[T], edges: Sequence[tuple[T, T]]):
+    def __init__(self, nodes: Sequence[T], edges: Sequence[tuple[T, T]]) -> None:
         self.nodes: Sequence[T] = nodes
         self.edges = edges
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Graph nodes:{NEWLINE.join(list(map(str, self.nodes)))}\n edges:{NEWLINE.join(list(map(str, self.edges)))}"
 
     def neighbours(self, node: T) -> List[T]:
@@ -32,13 +32,13 @@ class Room_prototype:
   NAME = "room prototype"
   INTERVAL = (0, 0)
   TILE_SEGNAME = Segname("")
-  def __init__(self):
+  def __init__(self) -> None:
       self.NAME =   self.NAME
 #  def __eq__(self, other):
  #     if isinstance(other, Room_prototype):
   #        return other.Index==self.Index
    #   return False
-  def __repr__(self):
+  def __repr__(self) -> str:
       return self.NAME
     
   def orientation(self, orientations: list[Orientation]) -> tuple[Segname, Orientation]:
@@ -57,7 +57,7 @@ class Room:
         self.id = self.__class__.ID
         self.__class__.ID += 1
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Room: {self.segname}, connected with: {self.connections}, oriented: {('North', 'West', 'South', 'East')[self.orientation % 4]}"
     
     def to_tiles(self) -> str:
@@ -70,7 +70,7 @@ def link(a:Room, b:Room, orientation: Orientation) -> None: # places
 
 vec2_add: Callable[[Pos, Pos], Pos] = lambda x,y: (x[0]+y[0], x[1]+y[1]) 
 
-rotate90 = lambda x: (-x[1], x[0])
+rotate90: Callable[[Pos], Pos] = lambda x: (-x[1], x[0])
 def rotate(n:int, x:Pos) -> Pos:
     if n:
         return rotate(n-1, rotate90(x))

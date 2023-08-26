@@ -79,7 +79,7 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
             
     class Curser:
         def __init__(self, pos, texture):
-            self.animation = animation.Animation(texture, (tile, tile), 8) 
+            self.animation = animation.Animation.from_dir(texture, (tile, tile), 8) 
             self.tile_pos = pos
             self.rect = pygame.Rect((pos[0]*tile, pos[1]*tile), (tile, tile))
             self.loading_zone_state = 0

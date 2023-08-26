@@ -30,7 +30,11 @@ def check_key(event_list, framecount, music):
   keys = pygame.key.get_pressed()
   pygame.key.set_repeat(1, 100000000)
   if True: #wtf
-    vec = [0,0,0]
+    vec = [0,0,0,0]
+    for i in event_list:
+        if i.type == pygame.KEYDOWN:
+            if i.key == pygame.K_c:
+                vec[3]=1
     if keys[pygame.K_a] or keys[pygame.K_LEFT]:
       vec[1]+=1
     if keys[pygame.K_d] or keys[pygame.K_RIGHT]:

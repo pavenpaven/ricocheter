@@ -5,13 +5,28 @@ import math
 comp = lambda f,g:lambda *x:f(g(*x))
 
 class Animation:
-    def __init__(self, directory, size, frame_delay):
+    def __init__(self, frames, size, frame_delay, loop = True): 
+        self.frames = frames 
         self.frame_delay = frame_delay
-        self.frames = list(map(comp(pygame.image.load, lambda x:f"{directory}/{x}"), sorted(os.listdir(directory), key=lambda x:int(x.replace(".png", "").split("-")[2])))) #normal magic
-        self.frames = list(map(lambda x:pygame.transform.scale(x, size), self.frames))
         self.texture = self.frames[0]
+        self.loop = loop
 
-    def update(self, framecount):
-        self.texture = self.frames[math.floor(framecount/self.frame_delay) % len(self.frames)]
+    @classmethod
+    def from_dir(cls, directory: str, size: tuple[int, int], *args):
+        return cls([pygame.transform.scale(
+                            pygame.image.load(f"{directory}/{i}"), size) 
+                        for i in sorted(os.listdir(directory),
+                                key = lambda x:int(x.replace(".png", "").split("-")[2]))],
+                   size, *args)
 
 
+
+
+    def update(self, framecount: int) -> None:
+        if self.loop:
+            self.texture = self.frames[math.floor(framecount/self.frame_delay) % len(self.frames)]
+            return None
+        if math.floor(framecount/self.frame_delay) >= len(self.frames) - 1:
+            pass
+        else:
+            self.texture = self.frames[math.floor(framecount/self.frame_delay)]

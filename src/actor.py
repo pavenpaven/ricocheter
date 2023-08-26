@@ -1,10 +1,13 @@
 import pygame
 import src.state as state
 import src.animation as animation
+from typing import Callable
 
 tile=38
 
-def load_sprites(segname, filename, change_state):
+c = lambda f,*x:lambda *y:f(*x, *y)
+
+def load_sprites(segname, filename, change_state, get_id, kill: Callable[[int], None]): #um for refrence change_state changes the current global state this was first used to change to a texbox state, kill is just popping the actor element and theirby the actors have a way of dieing 
   with open(filename, "r") as fil:
     txt=fil.read()
   
@@ -30,10 +33,10 @@ def load_sprites(segname, filename, change_state):
         #print(i, f.name)
         if i[0]==f.name:
           if len(i)>2:
-            out.append(f(i[1],change_state,extra=i[2]))
+            out.append(f(i[1],change_state, get_id(), kill,extra=i[2]))
           else:
             #print(f,i[1])
-            out.append(f(i[1], change_state))
+            out.append(f(i[1], change_state, get_id(), kill))
   else:
     out = []
 
@@ -62,13 +65,19 @@ class Sprite:
   size=(1,1)
   collision=False
   interactable = False
-  def __init__(self, pos, change_state, extra=""):
+  def __init__(self, pos, change_state, index, kill, extra=""):
     #print(pos)
     #pos = pos.split(",") #stupid string
     #self.pos = (tile*int(pos[0]), tile*int(pos[1]))
     self.pos =pos
     self.change_state = change_state
     self.startup_process(extra)
+    self.kill = kill
+    self.index = index
+
+  @property
+  def rect(self):
+      return pygame.Rect(self.pos, self.size)
 
   def startup_save(self) -> dict:
       return dict()
@@ -79,21 +88,34 @@ class Sprite:
   def step_on(self):
     pass
 
-  def step(self):
+  def step(self, scene): #wtf wtf wtf  wtf wtf wtf wtfd wtf wtf wtfw tfw tfw tfw 
     pass
 
   def player_action(self):
     pass
-    
+
+  def mouse_over(self):
+      pass
+
   def render(self, scene, framecount):
     scene.blit(self.texture, self.pos)
 
-class Earth(Sprite):
-    ani = animation.Animation("Art/Cute_earth_with_out_space", (2.5*tile, 2.5*tile), 15) 
+
+class Animation_sprite(Sprite):
+     anim = ("Art/Cute_earth_with_out_space", (1, 1), 15)
+     name = "animation"
+    
+     def startup_process(self, extra):
+         self.ani = animation.Animation.from_dir(*self.anim)
+
+     def render(self, scene, framecount):
+         self.ani.update(framecount)
+         scene.blit(self.ani.texture, self.pos)
+
+class Earth(Animation_sprite):
+    anim = ("Art/Cute_earth_with_out_space", (2.5*tile, 2.5*tile), 15)
+    size =(2.5*tile, 2.5*tile)
     name = "earth"
-    def render(self, scene, framecount):
-        self.ani.update(framecount)
-        scene.blit(self.ani.texture, self.pos)
 
 ACTOR_SAVE_DATA = []
 SPRITE_CLASSES = [Earth]

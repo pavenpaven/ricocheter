@@ -56,8 +56,9 @@ class Map:
             self.tiles = []
             self.loading_zone = []
             self.actors = []
+            self.actor_id = 0
             self.state = current_state
-
+        
         def change_state(self, changed_state: state.State) -> None:
           self.state = changed_state
       
@@ -90,8 +91,7 @@ class Map:
                 self.loading_zone = list(map(func, list(map(lambda x: x.split(".") ,lz_segs))))
             else:
                 self.loading_zone = []
-
-            self.actors = actor.load_sprites(segname, "Level/actors", self.change_state)
+            self.actors = actor.load_sprites(segname, "Level/actors", self.change_state, self.get_id, self.kill_actor)
             music.change_segname(segname) # idk self.music should alsow be in combat
 
 
@@ -111,8 +111,13 @@ class Map:
                     self.surface.blit(tile_types.Tile_type.types[f].texture, (x,y))
                     x += tile
                 y += tile
-
+            
+            mouse = pygame.mouse.get_pos()
+            mouse = mouse[0] - self.pos[0], mouse[1] - self.pos[1]
             for i in self.actors:
+              i.step(self)
+              if i.rect.collidepoint(mouse):
+                  i.mouse_over()
               i.render(self.surface, framecount)
             
             imag = player.render(framecount)
@@ -164,3 +169,10 @@ class Map:
 
             self.tiles.append([])
             self.rotate(n-1)
+
+        def get_id(self) -> int:
+            self.actor_id += 1
+            return self.actor_id
+
+        def kill_actor(self, n:int) -> None:
+            self.actors = list(filter(lambda x: x.index != n, self.actors))

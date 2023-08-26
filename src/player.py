@@ -4,38 +4,35 @@ import src.world as world
 import src.tile_types as tile_types
 import src.actor as actor
 import src.animation as ani
-from src.create_map import rotate
+from src.physics import vec_add, scaler_vec_mul, vec_invert
+import src.physics as physics
+import src.bullet as bullet
 
 tile = world.tile
+
+c = lambda f,x:lambda :f(x)
 
 ANIMATION_DELAY = 7
 TURNING_SPEED = 0.2
 ACCELERATION_SPEED = 0.40
 BREAK_DIVISION = 1.04
 MAX_SPEED = 15
-BOOSTER_ACCEL = 1
-
-NOCLIP = [0]
-
-vec_invert = lambda x: tuple(map(lambda v:-v, x))
-vec_add = lambda x, y:tuple(map(lambda v:v[0]+v[1], zip(x,y)))
-scaler_vec_mul = lambda s,v:tuple(map(lambda x:s*x, v))
 
 class Player:
   def __init__(self, pos, filename, proporsion, speed):
     self.rect = pygame.Rect(pos, proporsion)
     self.speed = speed
-    self.animation = ani.Animation(filename, self.rect.size, ANIMATION_DELAY)
-    self.velocity = (0,0)
+    self.animation = ani.Animation.from_dir(filename, self.rect.size, ANIMATION_DELAY)
+    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED)
     self.angle = 0
 
   def render(self, framecount):
     self.animation.update(framecount)
     image = pygame.transform.rotate(self.animation.texture, math.degrees(self.angle)) # very stupid
-    self.rect = image.get_rect(center=self.rect.center)
+    self.rect = image.get_rect(center = self.physics.rect.center)
     return image
 
-  def use_button(self, actors: [actor.Sprite]): #or inherited from Sprite
+  def use_button(self, actors: list[actor.Sprite]): #or inherited from Sprite
     actors = list(filter(lambda x:x.interactable, actors))
     
     actors_in_range = list(
@@ -59,77 +56,25 @@ class Player:
         x=x[0] #yes
         lz = scene.loading_zone[x]
         scene.load_room("Level/gamefile", lz.segname, music)
-        (self.rect.x, self.rect.y) = lz.spawn_pos
+        (self.physics.rect.x, self.physics.rect.y) = lz.spawn_pos
         
-  def walk(self, input_vector, scene, music): #input_vector is like (Forward, Right/Left, Break) wtf
+  def walk(self, input_vector, scene, music): #input_vector is like (Forward, Right/Left, Break, Shoot) wtf
+    if input_vector[3]:
+        self.shoot(scene)
     accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
-    self.velocity = vec_add(self.velocity, accel_vector)
-    speed = math.sqrt((self.velocity[0]**2) + (self.velocity[1]**2))
-    if  speed > MAX_SPEED:
-        self.velocity = scaler_vec_mul(MAX_SPEED/speed, self.velocity)
-        
+    self.physics.accelerate(accel_vector)
 
-    travel_pos = vec_add((self.rect.x, self.rect.y), self.velocity)
-    
-    self.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.velocity) #magi
+    self.physics.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.physics.velocity) #magi
     self.angle += input_vector[1]*TURNING_SPEED
 
-    player_hitbox_x = ((travel_pos[0], self.rect.y), (travel_pos[0] + self.rect.size[0], self.rect.y + self.rect.height )) #FIXME
-    player_hitbox_y = ((self.rect.x, travel_pos[1]), (self.rect.x + self.rect.size[0], travel_pos[1] + self.rect.height))
-    if not NOCLIP[0]: 
-        can_go_x, booster_vec =check_collision(player_hitbox_x,scene, (pygame.Rect(player_hitbox_x[0], (self.rect.size[0], self.rect.size[1]/3))))
-        can_go_y, _=check_collision(player_hitbox_y,scene, (pygame.Rect(player_hitbox_y[0], (self.rect.size[0], self.rect.size[1]/3)))) #what the
-    else:
-        booster_vec=(0,0)
-        can_go_x = True
-        can_go_y = True
+    self.physics.update(scene)
+
+    self.check_loading_zone(self.physics.rect, scene, music) #wierd coordinate asyemtry
+
+  def shoot(self, scene):
+        index = scene.get_id()
+        bull = bullet.Bullet((self.rect.center), "trolololololololo", index, scene.kill_actor)
+        bull.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle), -math.cos(self.angle)))
+        scene.actors.append(bull)  
+
     
-    self.velocity = vec_add(self.velocity, booster_vec)
-
-    if can_go_x:
-        self.rect.x = travel_pos[0]
-    else:
-        self.velocity = (-self.velocity[0], self.velocity[1])
-    
-    if can_go_y:
-        self.rect.y =  travel_pos[1]
-    else:
-        self.velocity = (self.velocity[0], -self.velocity[1])
-    
-
-    self.check_loading_zone(pygame.Rect(player_hitbox_x[0], (self.rect.size[0], self.rect.size[1]/3)), scene, music) #wierd coordinate asyemtry
-
-
-def check_collision(player_hitbox, scene, player_rect):
-    tiles = get_touching_tiles(player_hitbox, scene)
-    can_go = True
-    booster_vec = (0,0)
-    for i in tiles:
-        tile_type = tile_types.Tile_type.types[scene.tiles[i[1]][i[0]]]
-        if tile_type.collision:
-            can_go = False
-        if tile_type.letter in ["c", "C", "b", "B"]: #key codes for boosters
-            orientation = ["c", "C", "b", "B"].index(tile_type.letter)
-            booster_vec = vec_add(booster_vec, rotate(orientation, (0,-1*BOOSTER_ACCEL)))
-
-
-    for i in scene.actors:
-      if i.collision:  
-        if player_rect.colliderect(pygame.Rect(i.pos,i.size)):
-          can_go = False
-      else:
-        if player_rect.colliderect(pygame.Rect(i.pos,i.size)):
-            i.step_on()
-    
-    
-
-    return can_go, booster_vec
-  
-
-
-def get_touching_tiles(rect, sce): #sce for scene idk why
-    out = []
-    points = [rect[0], rect[1], (rect[0][0], rect[1][1]), (rect[1][0], rect[0][1])]
-    for i in points:
-        out.append((math.trunc(i[0]/tile), math.trunc(i[1]/tile)))
-    return out
