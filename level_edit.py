@@ -45,10 +45,20 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
                 if pressed[j.key]:
                     scene.tiles[curser.tile_pos[1]][curser.tile_pos[0]] = n
             n+=1
+        
+        mouse_pressed = pygame.mouse.get_pressed()
+        if mouse_pressed[0]:
+            if curser.last_tile:
+                scene.tiles[curser.tile_pos[1]][curser.tile_pos[0]] = curser.last_tile
 
+        vec = [0, 0]
         for event in  pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 3:
+                    curser.last_tile = scene.tiles[curser.tile_pos[1]][curser.tile_pos[0]]
+            if event.type == pygame.MOUSEWHEEL:
+                curser.change_tile(round(math.copysign(1, event.y)))
             if event.type == pygame.KEYDOWN:
-                vec = [0, 0]
                 if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     last_pressed=framecount
                     vec[0]+=-1
@@ -70,11 +80,12 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
                 else:
                     if event.key == pygame.K_x:
                         curser.place_loading_zone()
-                curser.tile_pos = (vec[0]+curser.tile_pos[0], vec[1]+curser.tile_pos[1])
-                (curser.rect.x, curser.rect.y) = (curser.tile_pos[0]*tile, curser.tile_pos[1]*tile)
-                last_pressed=framecount
+            last_pressed=framecount
             if event.type == pygame.QUIT:
                 quit = True
+        
+        curser.tile_pos = (vec[0]+curser.tile_pos[0], vec[1]+curser.tile_pos[1])
+        (curser.rect.x, curser.rect.y) = (curser.tile_pos[0]*tile, curser.tile_pos[1]*tile)
         return quit
 
     def graphics(framecount):
@@ -88,6 +99,7 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
             self.animation = animation.Animation.from_dir(texture, (tile, tile), 8) 
             self.tile_pos = pos
             self.rect = pygame.Rect((pos[0]*tile, pos[1]*tile), (tile, tile))
+            self.last_tile = None
             self.loading_zone_state = 0
 
         def render(self, framecount):
@@ -98,6 +110,7 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
             
             if scene.tiles[self.tile_pos[1]][self.tile_pos[0]] != len(tile_types.Tile_type.types) - 1:
                 scene.tiles[self.tile_pos[1]][self.tile_pos[0]]+=ammount
+                self.last_tile = scene.tiles[self.tile_pos[1]][self.tile_pos[0]]
             else:
                 scene.tiles[self.tile_pos[1]][self.tile_pos[0]] = 0
         def place_loading_zone(self, segname):
