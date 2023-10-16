@@ -11,7 +11,7 @@ class Bullet(actor.Sprite):
     
     def startup_process(self, extra):
         self.bounds_count = 0
-        def f():
+        def f(_):
             self.bounds_count += 1
             if self.bounds_count > 3:
                 self.kill(self.index)

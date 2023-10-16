@@ -1,3 +1,4 @@
+from __future__ import annotations
 import pygame
 from typing import Callable
 import math
@@ -5,6 +6,7 @@ from math import floor
 import operator
 from functools import reduce
 from itertools import product
+
 
 from src.create_map import rotate
 import src.world as world
@@ -34,7 +36,7 @@ def dot_product(v: Vec, u: Vec) -> float:
     return sum(map(operator.mul, v, u))
 
 class Physics_object:
-    def __init__(self, rect: pygame.Rect, velocity: Vec2, max_speed = 15, on_bounds: Callable[[], None] = lambda :None):
+    def __init__(self, rect: pygame.Rect, velocity: Vec2, max_speed = 15, on_bounds: Callable[[Physics_object], None] = lambda x:None):
         self.velocity = velocity
         self.rect = rect
         self.max_speed = max_speed
@@ -70,13 +72,13 @@ class Physics_object:
             self.rect.x = travel_pos[0]
         else:
             self.velocity = (-self.velocity[0], self.velocity[1])
-            self.on_bounds()
+            self.on_bounds(self)
         
         if can_go_y:
             self.rect.y =  travel_pos[1]
         else:
             self.velocity = (self.velocity[0], -self.velocity[1])
-            self.on_bounds()
+            self.on_bounds(self)
 
 
 def check_collision(hitbox: pygame.Rect, scene: world.Map) -> tuple[bool, Vec2]:

@@ -35,6 +35,17 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
             mouse_pos = (mouse_pos[0] - world_pos[0], mouse_pos[1] - world_pos[1])
             mouse_tile_pos = (math.floor(mouse_pos[0]/tile), math.floor(mouse_pos[1]/tile))
             curser.tile_pos = mouse_tile_pos
+        
+        n=0
+        pressed = pygame.key.get_pressed()
+        for j in tile_types.Tile_type.types:
+            #if event.key == j.key:
+            #    scene.tiles[curser.tile_pos[1]][curser.tile_pos[0]] = n
+            if j.key:
+                if pressed[j.key]:
+                    scene.tiles[curser.tile_pos[1]][curser.tile_pos[0]] = n
+            n+=1
+
         for event in  pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 vec = [0, 0]
@@ -59,11 +70,6 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
                 else:
                     if event.key == pygame.K_x:
                         curser.place_loading_zone()
-                n=0
-                for j in tile_types.Tile_type.types:
-                    if event.key == j.key:
-                        scene.tiles[curser.tile_pos[1]][curser.tile_pos[0]] = n
-                    n+=1
                 curser.tile_pos = (vec[0]+curser.tile_pos[0], vec[1]+curser.tile_pos[1])
                 (curser.rect.x, curser.rect.y) = (curser.tile_pos[0]*tile, curser.tile_pos[1]*tile)
                 last_pressed=framecount

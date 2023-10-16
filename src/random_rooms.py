@@ -119,9 +119,9 @@ class Branch(Room_prototype):
 
     def orientation(self, orientations: list[Orientation]) -> tuple[Segname, Orientation]:
         if len(orientations)==4:
-            return (Segname("Branch"), Orientation(0))
+            return (Segname(random.choice(["Branch", "test1"])), Orientation(0))
         elif len(orientations) ==3:
-            return (Segname("Hallway_3"), Orientation(([i for i in range(4) if not i in orientations][0]-1) % 4))
+            return (Segname(random.choice(["Hallway_3", "Hallway_4"])), Orientation(([i for i in range(4) if not i in orientations][0]-1) % 4))
         elif len(orientations) ==2:
             return Path.orientation(Path(), orientations) #what the 
         elif len(orientations) == 1:
@@ -138,12 +138,12 @@ class Path(Room_prototype):
         if len(orientations) !=2:
             raise Exception(f"room prototype {Room_prototype} connected to too many rooms or few")
         if orientations[0]%2 == orientations[1]%2:
-            return (Segname(random.choice(["Hallway", "Hallway_thicc"])), Orientation(orientations[0] % 2))
+            return (Segname(random.choice(["Hallway", "Hallway_thicc", "Hallway_5"])), Orientation(orientations[0] % 2))
         if (orientations[0]+1) == orientations[1]:
             x = orientations[0]
         else:
             x = orientations[1]
-        return  (Segname("Hallway_turn"), Orientation(x))
+        return  (Segname(random.choice(["Hallway_turn", "weirdTurn"])), Orientation(x))
 
    
 

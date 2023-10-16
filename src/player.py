@@ -16,14 +16,16 @@ ANIMATION_DELAY = 7
 TURNING_SPEED = 0.2
 ACCELERATION_SPEED = 0.40
 BREAK_DIVISION = 1.04
-MAX_SPEED = 15
+MAX_SPEED = 12
+BOUNDS_SLOWDOWN = 0.8
 
 class Player:
   def __init__(self, pos, filename, proporsion, speed):
     self.rect = pygame.Rect(pos, proporsion)
     self.speed = speed
     self.animation = ani.Animation.from_dir(filename, self.rect.size, ANIMATION_DELAY)
-    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED)
+    def f(self): self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, self.velocity)
+    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f)
     self.angle = 0
 
   def render(self, framecount):
