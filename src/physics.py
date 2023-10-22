@@ -22,7 +22,6 @@ Vec2 = tuple[float, float]
 
 NOCLIP = [0]
 
-
 def vec_invert(x: Vec) -> Vec: 
         return tuple(map(lambda v:-v, x))
 
@@ -34,6 +33,15 @@ def scaler_vec_mul(s: float, v:Vec) -> Vec:
 
 def dot_product(v: Vec, u: Vec) -> float:
     return sum(map(operator.mul, v, u))
+
+def magnitude(v: Vec) -> float:
+    return math.sqrt(sum(map(lambda x:x**2, v)))
+
+def normalize(v: Vec) -> Vec:
+    return scaler_vec_mul(1/magnitude(v), v)
+
+def reduce_magnitude(x: int, y: Vec) -> Vec:
+    pass
 
 class Physics_object:
     def __init__(self, rect: pygame.Rect, velocity: Vec2, max_speed = 15, on_bounds: Callable[[Physics_object], None] = lambda x:None):
@@ -94,9 +102,6 @@ def check_collision(hitbox: pygame.Rect, scene: world.Map) -> tuple[bool, Vec2]:
       if i.collision:  
         if hitbox.colliderect(pygame.Rect(i.pos,i.size)):
           can_go = False
-      else:
-        if hitbox.colliderect(pygame.Rect(i.pos,i.size)):
-            i.step_on()
 
     return can_go, booster_vec
  

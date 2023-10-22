@@ -85,7 +85,7 @@ class Sprite:
   def startup_process(self, extra):
     pass
 
-  def step_on(self):
+  def step_on(self, player):
     pass
 
   def step(self, scene): #wtf wtf wtf  wtf wtf wtf wtfd wtf wtf wtfw tfw tfw tfw 

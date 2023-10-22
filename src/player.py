@@ -4,9 +4,10 @@ import src.world as world
 import src.tile_types as tile_types
 import src.actor as actor
 import src.animation as ani
-from src.physics import vec_add, scaler_vec_mul, vec_invert
+from src.physics import vec_add, scaler_vec_mul, vec_invert, magnitude, normalize
 import src.physics as physics
 import src.bullet as bullet
+import src.pickup
 
 tile = world.tile
 
@@ -14,10 +15,12 @@ c = lambda f,x:lambda :f(x)
 
 ANIMATION_DELAY = 7
 TURNING_SPEED = 0.2
-ACCELERATION_SPEED = 0.40
+ACCELERATION_SPEED = 0.60
 BREAK_DIVISION = 1.04
-MAX_SPEED = 12
+MAX_SPEED = 15
 BOUNDS_SLOWDOWN = 0.8
+DRY_FRICTION = 0.1
+DRAG = 0.02
 
 class Player:
   def __init__(self, pos, filename, proporsion, speed):
@@ -65,6 +68,9 @@ class Player:
         self.shoot(scene)
     accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
     self.physics.accelerate(accel_vector)
+    if magnitude(self.physics.velocity) != 0:
+        friction = min((self.physics.velocity, scaler_vec_mul(DRY_FRICTION+DRAG*magnitude(self.physics.velocity), normalize(self.physics.velocity))), key=magnitude)
+        self.physics.accelerate(vec_invert(friction))
 
     self.physics.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.physics.velocity) #magi
     self.angle += input_vector[1]*TURNING_SPEED

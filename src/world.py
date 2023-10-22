@@ -118,6 +118,8 @@ class Map:
               i.step(self)
               if i.rect.collidepoint(mouse):
                   i.mouse_over()
+              if i.rect.colliderect(player.rect):
+                  i.step_on(player)
               i.render(self.surface, framecount)
             
             imag = player.render(framecount)

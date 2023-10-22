@@ -99,12 +99,11 @@ def transfer_to_file(room: Room, scene: world.Map, music: music.Music):
             elif n == Orientation(1):
                 scene.loading_zone.append(world.Loading_zone_cluster(0, str(i), 15, 0, 1, 15, 2, 7.5))
             elif n == Orientation(2):
-                scene.loading_zone.append(world.Loading_zone_cluster(0, str(i), 0, 14, 15, 1, 7.5, 2))
+                scene.loading_zone.append(world.Loading_zone_cluster(0, str(i), 0, 15, 15, 1, 7.5, 2)) #wat
             else:
                 scene.loading_zone.append(world.Loading_zone_cluster(0, str(i), 0, 0, 1, 15, 15-2, 7.5))
     scene.rotate(room.orientation)
     scene.save(FILENAME, str(room.id))
-
 
 def travagg(s:Sequence[T], f:Callable[[T,T], T]) -> list[T]:
     a = []
