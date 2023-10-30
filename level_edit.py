@@ -120,6 +120,7 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
     curser = Curser((1,1), "Art/Cute_curser_ani")
     scene = world.Map((16,16), (0, tile*2), 1) #wtf state 1 lol      
     scene.load_room(filename, segname, MUSIC)
+    scene.actors = {segname: []}
     window = pygame.display.set_mode((608,700))
     pygame.font.init()
     #print(pygame.font.get_fonts())
