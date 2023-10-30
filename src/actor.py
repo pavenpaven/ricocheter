@@ -4,10 +4,9 @@ import src.animation as animation
 from typing import Callable
 
 tile=38
-
 c = lambda f,*x:lambda *y:f(*x, *y)
 
-def load_sprites(segname, filename, change_state, get_id, kill: Callable[[int], None]): #um for refrence change_state changes the current global state this was first used to change to a texbox state, kill is just popping the actor element and theirby the actors have a way of dieing 
+def load_sprites(segname, filename, change_state, kill: Callable[[int], None]): #um for refrence change_state changes the current global state this was first used to change to a texbox state, kill is just popping the actor element and theirby the actors have a way of dieing 
   with open(filename, "r") as fil:
     txt=fil.read()
   
@@ -33,15 +32,18 @@ def load_sprites(segname, filename, change_state, get_id, kill: Callable[[int], 
         #print(i, f.name)
         if i[0]==f.name:
           if len(i)>2:
-            out.append(f(i[1],change_state, get_id(), kill,extra=i[2]))
+            out.append(f(i[1],change_state, kill,extra=i[2]))
           else:
             #print(f,i[1])
-            out.append(f(i[1], change_state, get_id(), kill))
+            out.append(f(i[1], change_state, kill))
   else:
     out = []
 
   return out
 
+def give_actors(segname):
+  pass
+  
 def actor_iter(filename: str) -> str:
     with open(filenamem, "r") as fil:
         txt = fil.read()
@@ -65,7 +67,8 @@ class Sprite:
   size=(1,1)
   collision=False
   interactable = False
-  def __init__(self, pos, change_state, index, kill, extra=""):
+  INDEX = 0
+  def __init__(self, pos, change_state, kill, extra=""):
     #print(pos)
     #pos = pos.split(",") #stupid string
     #self.pos = (tile*int(pos[0]), tile*int(pos[1]))
@@ -73,7 +76,8 @@ class Sprite:
     self.change_state = change_state
     self.startup_process(extra)
     self.kill = kill
-    self.index = index
+    self.index = Sprite.INDEX
+    Sprite.INDEX += 1
 
   @property
   def rect(self):

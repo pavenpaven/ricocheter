@@ -7,13 +7,21 @@ import src.random_rooms as random_rooms
 from itertools import product
 import random
 import src.world as world
+import src.world_handler as world_handler
 import src.music as music
+import src.state as state
+import time
 
 from src.random_rooms import Spawn,Boss,Reward,Shop,Key #FIXME
 
 tile = world.tile
 FILENAME = "Level/gamefile"
 
+def mapgen_handler(music): # wtf
+  generate_map(world_handler.scene, music)
+  world_handler.scene.tiles = []
+  return state.State.OVERWORLD
+  
 def create_board(n: int) -> Graph[tuple[int, int]]:
   nodes = list(product(range(n), range(n)))
   edges = []
@@ -62,6 +70,7 @@ def dijkstra(graph: Graph[Pos], start: Pos, dest: Pos) -> List[Pos] | None:
 
 
 def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that central branch needs to be edge branch (i.e only connected to one other branch) and g contains no loops and branches are the only nodes with degree higher than 1 and cannot have degree higher than 4
+    start = time.perf_counter()
     while True:
         try:
             A = [Branch(),Branch(),Branch(), Branch(), Spawn(), Reward(), Reward(), Shop(), Key(), Boss()]
@@ -80,15 +89,20 @@ def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that ce
             print("Error, restarting")
 
 
-    initialize_file(len(rooms))
+    initialize_file(len(rooms), [str(i.id) for i in rooms if isinstance(i.prototype, Spawn) ][0])
     for i in rooms:
-        transfer_to_file(i, scene, music)
+      transfer_to_file(i, scene, music)
 
-    return [str(i.id) for i in rooms if isinstance(i.prototype, Spawn) ][0]
+    print([i for i in rooms if isinstance(i.prototype, Spawn) ][0])
 
-def initialize_file(n: int) -> None:
+    populate_rooms(rooms, scene)
+    
+    end = time.perf_counter()
+    print(f"Map gen time: {end - start}")
+
+def initialize_file(n: int, spawn: str) -> None:
     with open(FILENAME, "w") as fil:
-        fil.write("".join([f"{i}##?" for i in range(n)]))
+        fil.write("".join([f"{i}##?" for i in range(n)]) + f"={spawn}")
 
 def transfer_to_file(room: Room, scene: world.Map, music: music.Music):
     scene.load_room("Level/tile_map", room.segname, music)
@@ -105,13 +119,17 @@ def transfer_to_file(room: Room, scene: world.Map, music: music.Music):
     scene.rotate(room.orientation)
     scene.save(FILENAME, str(room.id))
 
+def populate_rooms(rooms: list[Room], scene: world.Map) -> None:
+  actors = [(str(i.id), i.prototype.populate((scene.change_state, scene.kill_actor)))
+                        for i in rooms]
+  scene.actors = dict(actors)
+
+
 def travagg(s:Sequence[T], f:Callable[[T,T], T]) -> list[T]:
     a = []
     for n,i in enumerate(s[:len(s)-1]):
         a.append(f(i, s[n+1]))
     return a
-
-
 
 
 def connect_branches(board: Graph[Pos], placement: Graph[tuple[Room_prototype, Pos]], disjoint_branches: list[list[Room_prototype]]) -> Graph[tuple[Room_prototype, Pos]] | None:

@@ -32,9 +32,9 @@ them.title_font = CREDIT_FONT
 them.title_font_color = (255, 255, 255)
 them.background_color = (int("47", 16), int("19", 16), int("61", 16), 0)
 them.widget_selection_effect = pygame_menu.widgets.SimpleSelection()
+#them.widget_selection_effect = pygame_menu.widgets.LeftArrowSelection()
 
-
-def change_state(state):
+def change_state(state: state.State):
     STATE[0] = state
     world_handler.jack.physics.rect.x, world_handler.jack.physics.rect.y = (7*tile, 7*tile) 
     world_handler.scene.tiles = [] # what the
@@ -51,10 +51,12 @@ def get_title_menu(change_state):
     credit_menu = get_credit_menu()
 
     menu = pygame_menu.Menu("the Ricocheter and the Broken Moon", 608, 540, theme = them )
-    a = menu.add.button("Start", c(change_state, state.State.OVERWORLD))
+    a = menu.add.button("Start", c(change_state, state.State.MAP_GEN))
+    d = menu.add.button("Load", c(change_state, state.State.OVERWORLD))
     b = menu.add.button("Credits", credit_menu)
     a.set_font(CREDIT_FONT, 50, (255,255,255), (215, 190, 105), (0,0,0), (83, 68, 21), None, antialias=False )
     b.set_font(CREDIT_FONT, 50, (255,255,255), (215, 190, 105), (0,0,0), (83, 68, 21), None, antialias=False )
+    d.set_font(CREDIT_FONT, 50, (255,255,255), (215, 190, 105), (0,0,0), (83, 68, 21), None, antialias=False )
     return menu
 
 def startup(music):

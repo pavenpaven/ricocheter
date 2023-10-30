@@ -5,8 +5,15 @@ import src.actor as actor
 import src.state as state
 import src.music as music
 import src.conf as conf
+import src.bar as bar
+
+
+from typing import Iterable
 
 tile = 38
+Segname = str
+
+BAR_SIZE = (tile*16, tile*2)
 
 class Loading_zone_cluster:
     def __init__(self, point_index, segname, posx, posy, sizex, sizey, spawnx, spawny):
@@ -33,7 +40,7 @@ class Loading_zone_cluster:
         #print(self.spawn_pos)
         return ".".join([str(self.linking_index), self.segname, str_rect, str_spawn]) 
 
-def get_segname_room(filename, segname): #returns segment if not found returns -1
+def get_segname_room(filename, segname: Segname | None): #returns segment if not found returns -1
     with open(filename, "r") as fil:
         text = fil.read()
         
@@ -55,17 +62,27 @@ class Map:
             self.surface = pygame.Surface((size[0]*tile, size[1]*tile))
             self.tiles = []
             self.loading_zone = []
-            self.actors = []
-            self.actor_id = 0
+            self.actors = {"Title": [actor.Earth((10*tile,4*tile), self.change_state ,self.kill_actor)]}
             self.state = current_state
-        
+            self.segname = None # dont try access the segname if nothing is 
+            
+        @property
+        def loaded_actors(self) -> list[actor.Sprite]:
+            return self.actors[self.segname]
         def change_state(self, changed_state: state.State) -> None:
           self.state = changed_state
       
-        def load_room(self, filename, segname, music):
+        def load_room(self, filename, segname: Segname | None, music): # segname None means find spawn
+            if not segname:
+                with open(filename, "r") as fil:
+                    text = fil.read()
+                segname = text.split("=")[1]
+                print(segname)
+
             segments = get_segname_room(filename, segname)
             if segments == -1:
                 return -1
+            self.segname = segname
             segments = segments.split("#")
             row = segments[1].split("\n")
             self.tiles=[]
@@ -91,7 +108,7 @@ class Map:
                 self.loading_zone = list(map(func, list(map(lambda x: x.split(".") ,lz_segs))))
             else:
                 self.loading_zone = []
-            self.actors = actor.load_sprites(segname, "Level/actors", self.change_state, self.get_id, self.kill_actor)
+#           self.actors = actor.load_sprites(segname, "Level/actors", self.change_state, self.kill_actor)
             music.change_segname(segname) # idk self.music should alsow be in combat
 
 
@@ -114,7 +131,7 @@ class Map:
             
             mouse = pygame.mouse.get_pos()
             mouse = mouse[0] - self.pos[0], mouse[1] - self.pos[1]
-            for i in self.actors:
+            for i in self.loaded_actors:
               i.step(self)
               if i.rect.collidepoint(mouse):
                   i.mouse_over()
@@ -124,7 +141,8 @@ class Map:
             
             imag = player.render(framecount)
             self.surface.blit(imag, (player.rect.x, player.rect.y))
-          
+            #self.surface.blit(bar.draw(BAR_SIZE, framecount, player), (0,0))
+            
             window.blit(self.surface, self.pos)
         
         def save(self, filename, segname):
@@ -172,9 +190,9 @@ class Map:
             self.tiles.append([])
             self.rotate(n-1)
 
-        def get_id(self) -> int:
-            self.actor_id += 1
-            return self.actor_id
-
         def kill_actor(self, n:int) -> None:
-            self.actors = list(filter(lambda x: x.index != n, self.actors))
+            print(n)
+            self.actors = dict(map(lambda y:
+                                   (y, list(filter(lambda x: x.index != n, self.actors[y]))),
+                                   self.actors))
+            print(self.actors)

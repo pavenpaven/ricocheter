@@ -5,19 +5,14 @@ import src.actor as actor
 import src.conf as conf
 import src.state as state
 import key
-import src.create_map as create_map
-import time
 
 tile = world.tile
 
 def overworld_handler(window, framecount, event_list, music) -> state.State:
   scene.state = state.State.OVERWORLD
   if not scene.tiles:
-      start = time.perf_counter()
-      spawn = create_map.generate_map(scene, music)
-      scene.load_room("Level/gamefile", spawn, music)
-      end = time.perf_counter()
-      print(f"Map gen time: {end-start}")
+    scene.load_room("Level/gamefile", None, music)
+    print(scene.segname)
   graphics(window, music, framecount)
   check_key(event_list, framecount, music)
   return scene.state
@@ -41,9 +36,11 @@ def check_key(event_list, framecount, music):
       vec[1]+=-1
     if keys[pygame.K_w] or keys[pygame.K_UP]:
       vec[0] +=1
-    if keys[pygame.K_s] or keys[pygame.K_DOWN] or keys[pygame.K_z]:
+    if keys[pygame.K_DOWN]:
+      vec[0] +=-1
+    if keys[pygame.K_s] or keys[pygame.K_z]:
       vec[2] =1
-    jack.walk(vec, scene, music)
+    jack.walk(vec, scene, (-vec[1], -vec[0]), music)
   if key.is_keydown(event_list, "x", framecount):
     jack.use_button(scene.actors)
 

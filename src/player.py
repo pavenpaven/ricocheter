@@ -7,7 +7,7 @@ import src.animation as ani
 from src.physics import vec_add, scaler_vec_mul, vec_invert, magnitude, normalize
 import src.physics as physics
 import src.bullet as bullet
-import src.pickup
+import src.pickup as pickup
 
 tile = world.tile
 
@@ -30,7 +30,8 @@ class Player:
     def f(self): self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, self.velocity)
     self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f)
     self.angle = 0
-
+    self.items = []
+    
   def render(self, framecount):
     self.animation.update(framecount)
     image = pygame.transform.rotate(self.animation.texture, math.degrees(self.angle)) # very stupid
@@ -63,10 +64,11 @@ class Player:
         scene.load_room("Level/gamefile", lz.segname, music)
         (self.physics.rect.x, self.physics.rect.y) = lz.spawn_pos
         
-  def walk(self, input_vector, scene, music): #input_vector is like (Forward, Right/Left, Break, Shoot) wtf
+  def walk(self, input_vector, scene, move_vector, music): #input_vector is like (Forward, Right/Left, Break, Shoot) wtf
     if input_vector[3]:
         self.shoot(scene)
-    accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
+    #accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
+    accel_vector = scaler_vec_mul(ACCELERATION_SPEED, move_vector) #down is positive y
     self.physics.accelerate(accel_vector)
     if magnitude(self.physics.velocity) != 0:
         friction = min((self.physics.velocity, scaler_vec_mul(DRY_FRICTION+DRAG*magnitude(self.physics.velocity), normalize(self.physics.velocity))), key=magnitude)
@@ -80,9 +82,11 @@ class Player:
     self.check_loading_zone(self.physics.rect, scene, music) #wierd coordinate asyemtry
 
   def shoot(self, scene):
-        index = scene.get_id()
-        bull = bullet.Bullet((self.rect.center), "trolololololololo", index, scene.kill_actor)
+        bull = bullet.Bullet((self.rect.center), "trolololololololo", scene.kill_actor)
         bull.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle), -math.cos(self.angle)))
         scene.actors.append(bull)  
 
+  def get(self, item: pickup.Item):
+    item.on_pickup(self)
+    self.items.append(item)
     

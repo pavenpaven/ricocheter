@@ -1,11 +1,16 @@
 import random
 from typing import List, Sequence, NewType, TypeVar, Generic, Callable, Set
 from itertools import chain
+from src.actor import tile
+import src.actor as actor
+import src.pickup as pickup
+
 
 NEWLINE = "\n"
 Pos = tuple[int, int]
 Segname = NewType("Segname", str) # magic
 Orientation = NewType("Orientation", int)   
+Actor_constructor = tuple[Callable[[None], None], Callable[[None], None]] # change state and kill
 
 T =TypeVar("T")  
 
@@ -46,6 +51,9 @@ class Room_prototype:
           raise Exception(f"room prototype {Room_prototype} connected to too many rooms")
       return (self.TILE_SEGNAME, orientations[0])
 
+  def populate(self, create_actor: Actor_constructor) -> list[actor.Sprite]:
+      return [] 
+  
 Con = int | None
 
 class Room:
@@ -62,7 +70,7 @@ class Room:
     
     def to_tiles(self) -> str:
         return "" #FIXME
-
+        
 def link(a:Room, b:Room, orientation: Orientation) -> None: # places 
     a.connections[orientation] = b.id
     b.connections[(orientation+2)%4] = a.id
@@ -91,6 +99,10 @@ class Shop(Room_prototype):
   NAME = "shop room"
   INTERVAL = (1, 1)
   TILE_SEGNAME = Segname("Shop")
+  def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+      return [pickup.Item_sprite((12.5*tile, 2.5*tile), *constructor, "shopkeeper"),
+              pickup.Item_sprite((4.5*tile, 2.5*tile), *constructor, "barrel")]
+  
   
 class Reward(Room_prototype):
   NAME = "reward room"

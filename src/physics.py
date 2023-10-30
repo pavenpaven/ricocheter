@@ -98,7 +98,7 @@ def check_collision(hitbox: pygame.Rect, scene: world.Map) -> tuple[bool, Vec2]:
                           for i in tiles if i.letter in "cCbB"],
                          (0,0))
 
-    for i in scene.actors:
+    for i in scene.loaded_actors:
       if i.collision:  
         if hitbox.colliderect(pygame.Rect(i.pos,i.size)):
           can_go = False

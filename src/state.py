@@ -6,3 +6,4 @@ class State(enum.Enum):
   NPC_DIALOG = enum.auto()
   TITLE = enum.auto()
   GAMEOVER = enum.auto()
+  MAP_GEN = enum.auto()
