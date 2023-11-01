@@ -68,6 +68,10 @@ class Sprite:
   collision=False
   interactable = False
   INDEX = 0
+  IS_ENEMY = False
+  IS_BULLET = False
+  IS_GLOBALLY_LOADED = False
+  
   def __init__(self, pos, change_state, kill, extra=""):
     #print(pos)
     #pos = pos.split(",") #stupid string
@@ -92,7 +96,7 @@ class Sprite:
   def step_on(self, player):
     pass
 
-  def step(self, scene): #wtf wtf wtf  wtf wtf wtf wtfd wtf wtf wtfw tfw tfw tfw 
+  def step(self, scene, player): #wtf wtf wtf  wtf wtf wtf wtfd wtf wtf wtfw tfw tfw tfw 
     pass
 
   def player_action(self):

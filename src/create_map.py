@@ -7,6 +7,7 @@ import src.random_rooms as random_rooms
 from itertools import product
 import random
 import src.world as world
+from src.world import tile 
 import src.world_handler as world_handler
 import src.music as music
 import src.state as state
@@ -120,8 +121,12 @@ def transfer_to_file(room: Room, scene: world.Map, music: music.Music):
     scene.save(FILENAME, str(room.id))
 
 def populate_rooms(rooms: list[Room], scene: world.Map) -> None:
-  actors = [(str(i.id), i.prototype.populate((scene.change_state, scene.kill_actor)))
-                        for i in rooms]
+  actors = [i.prototype.populate((scene.change_state, scene.kill_actor)) for i in rooms]
+  for n, i in enumerate(actors):
+    for j in i:
+      j.pos =vec2_add((7.5*tile,7.5*tile), rotate(rooms[n].orientation, vec2_add((-7.5*tile, -7.5*tile), j.pos)))
+  actors = [(str(i.id), actors[n]) for n,i in enumerate(rooms)]
+
   scene.actors = dict(actors)
 
 
@@ -194,6 +199,10 @@ def connect_necessary_rooms(board: Graph[Pos], placement: Graph[tuple[Room_proto
 def vec2_add(x:tuple[int|float, int|float], y:tuple[int|float, int|float]) -> tuple[int|float, int|float]:
     return x[0]+y[0], x[1]+y[1]
 
+def vec2_invert(x:tuple[int|float, int|float]) -> tuple[int|float, int|float]:
+    return (-x[0], -x[1])
+  
+  
 rotate90 = lambda x: (-x[1], x[0])
 def rotate(n:int, x:tuple[int, int]) -> tuple[int, int]:
     if n:

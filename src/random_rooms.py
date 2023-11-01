@@ -4,6 +4,7 @@ from itertools import chain
 from src.actor import tile
 import src.actor as actor
 import src.pickup as pickup
+import src.enemy as enemy
 
 
 NEWLINE = "\n"
@@ -101,7 +102,7 @@ class Shop(Room_prototype):
   TILE_SEGNAME = Segname("Shop")
   def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
       return [pickup.Item_sprite((12.5*tile, 2.5*tile), *constructor, "shopkeeper"),
-              pickup.Item_sprite((4.5*tile, 2.5*tile), *constructor, "barrel")]
+              pickup.Item_sprite((4.5*tile, 2.5*tile), *constructor, "pancake")]
   
   
 class Reward(Room_prototype):
@@ -123,7 +124,10 @@ class Key(Room_prototype):
   NAME = "key room"
   INTERVAL = (1, 1)
   TILE_SEGNAME = Segname("Key")
+  def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+      return [pickup.Item_sprite((7*tile,7*tile), *constructor, "key")]
 
+  
 class Branch(Room_prototype):
     NAME = "branch room"
     INTEVAL = None
@@ -141,6 +145,9 @@ class Branch(Room_prototype):
 
 
         raise Exception(f"room prototype {Room_prototype} connected to too many rooms or none")
+
+    def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+        return [enemy.Rammer((7*tile,7*tile), *constructor), enemy.Ghost((0,0), *constructor)]
 
 class Path(Room_prototype):
     NAME = "Path"

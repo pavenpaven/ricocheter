@@ -10,6 +10,7 @@ class Bullet(actor.Sprite):
     texture = re("Art/Cute_bullet.png", (15,15))
     size = (15,15)
     name = "bullet"
+    IS_BULLET = True
     
     def startup_process(self, extra):
         self.bounds_count = 0
@@ -20,7 +21,7 @@ class Bullet(actor.Sprite):
                 self.kill(self.index)
         self.physics = physics.Physics_object(pygame.Rect(self.pos, self.size), (0,0), 20, f)
 
-    def step(self, scene):
+    def step(self, scene, player):
        self.physics.update(scene)
        self.pos = (self.physics.rect.x, self.physics.rect.y)
 

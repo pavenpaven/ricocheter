@@ -6,7 +6,7 @@ import src.state as state
 import src.music as music
 import src.conf as conf
 import src.bar as bar
-
+from itertools import chain
 
 from typing import Iterable
 
@@ -14,6 +14,8 @@ tile = 38
 Segname = str
 
 BAR_SIZE = (tile*16, tile*2)
+
+def vec2_add(v, w): return (v[0] + w[0], v[1] + w[1])
 
 class Loading_zone_cluster:
     def __init__(self, point_index, segname, posx, posy, sizex, sizey, spawnx, spawny):
@@ -68,7 +70,8 @@ class Map:
             
         @property
         def loaded_actors(self) -> list[actor.Sprite]:
-            return self.actors[self.segname]
+            return list(dict.fromkeys(self.actors[self.segname]
+                                     + list(filter(lambda x:x.IS_GLOBALLY_LOADED, chain(*self.actors.values())))))
         def change_state(self, changed_state: state.State) -> None:
           self.state = changed_state
       
@@ -132,19 +135,27 @@ class Map:
             mouse = pygame.mouse.get_pos()
             mouse = mouse[0] - self.pos[0], mouse[1] - self.pos[1]
             for i in self.loaded_actors:
-              i.step(self)
+              i.step(self, player) #tf
               if i.rect.collidepoint(mouse):
                   i.mouse_over()
               if i.rect.colliderect(player.rect):
                   i.step_on(player)
+                  if i.IS_ENEMY:
+                      player.hit(i, framecount)
               i.render(self.surface, framecount)
             
             imag = player.render(framecount)
             self.surface.blit(imag, (player.rect.x, player.rect.y))
-            #self.surface.blit(bar.draw(BAR_SIZE, framecount, player), (0,0))
-            
-            window.blit(self.surface, self.pos)
-        
+
+            if player.last_hit == framecount:
+                window.blit(self.surface, vec2_add(self.pos, (5, 4)))
+            elif player.last_hit + 1 == framecount:
+                window.blit(self.surface, vec2_add(self.pos, (-3, -2)))
+            else:
+                window.blit(self.surface, self.pos)
+            window.blit(bar.draw(BAR_SIZE, framecount, player), (0,0))
+
+
         def save(self, filename, segname):
             with open(filename, "r") as fil:
                 tex = fil.read()
@@ -191,8 +202,7 @@ class Map:
             self.rotate(n-1)
 
         def kill_actor(self, n:int) -> None:
-            print(n)
             self.actors = dict(map(lambda y:
                                    (y, list(filter(lambda x: x.index != n, self.actors[y]))),
                                    self.actors))
-            print(self.actors)
+            

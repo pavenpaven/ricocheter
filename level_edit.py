@@ -3,6 +3,9 @@ import sys
 import pygame
 import time
 import math
+import src.bar as bar
+surface = pygame.Surface((1,1))
+bar.draw = lambda x,y,z: surface
 import src.tile_types as tile_types
 import src.world as world
 import src.music as music
@@ -101,6 +104,7 @@ def open_level_edit(filename, segname, is_loading_zone_mode = False, lz_segname=
             self.rect = pygame.Rect((pos[0]*tile, pos[1]*tile), (tile, tile))
             self.last_tile = None
             self.loading_zone_state = 0
+            
 
         def render(self, framecount):
             self.animation.update(framecount)

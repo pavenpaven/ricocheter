@@ -8,7 +8,6 @@ from functools import reduce
 from itertools import product
 
 
-from src.create_map import rotate
 import src.world as world
 from src.world import tile
 from src.tile_types import Tile_type
@@ -21,6 +20,13 @@ Vec = tuple[float, ...]
 Vec2 = tuple[float, float]
 
 NOCLIP = [0]
+
+rotate90 = lambda x: (-x[1], x[0])
+def rotate(n:int, x:tuple[int, int]) -> tuple[int, int]:
+    if n:
+        return rotate(n-1, rotate90(x))
+    else:
+        return x
 
 def vec_invert(x: Vec) -> Vec: 
         return tuple(map(lambda v:-v, x))
