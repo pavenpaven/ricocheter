@@ -21,74 +21,10 @@ MAX_SPEED = 15
 BOUNDS_SLOWDOWN = 0.8
 DRY_FRICTION = 0.1
 DRAG = 0.02
-MAX_HEALTH = 6
+MAX_HEALTH = 10
 SHOOT_COOLDOWN = 15
 
-"""
-class Player:
-  def __init__(self, pos, filename, proporsion, speed):
-    self.rect = pygame.Rect(pos, proporsion)
-    self.speed = speed
-    self.animation = ani.Animation.from_dir(filename, self.rect.size, ANIMATION_DELAY)
-    def f(self): self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, self.velocity)
-    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f)
-    self.angle = 0
-    self.items = []
-    self.lives = 6
-    self.accel = ACCELERATION_SPEED
-    self.dry_friction = DRY_FRICTION
-    self.drag = DRAG
-    self.last_hit = 0
-    self.max_health = MAX_HEALTH
-    
-  def render(self, framecount):
-    self.animation.update(framecount)
-    image = pygame.transform.rotate(self.animation.texture, math.degrees(self.angle)) # very stupid
-    self.rect = image.get_rect(center = self.physics.rect.center)
-    return image
 
-        
-  def walk(self, input_vector, scene, move_vector, music): #input_vector is like (Forward, Right/Left, Break, Shoot) wtf
-    if input_vector[3]:
-        self.shoot(scene)
-    #accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
-    accel_vector = scaler_vec_mul(self.accel, move_vector) #down is positive y
-    self.physics.accelerate(accel_vector)
-    if magnitude(self.physics.velocity) != 0:
-        friction = min((self.physics.velocity, scaler_vec_mul(self.dry_friction+self.drag*magnitude(self.physics.velocity), normalize(self.physics.velocity))), key=magnitude)
-        self.physics.accelerate(vec_invert(friction))
-
-    self.physics.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.physics.velocity) #magi
-    #self.angle += input_vector[1]*TURNING_SPEED
-    if move_vector[0] or move_vector[1]:
-      if move_vector[1]:
-        if move_vector[1]>0:
-          self.angle = math.pi + math.atan(move_vector[0]/move_vector[1])
-        else:
-          self.angle = math.atan(move_vector[0]/move_vector[1])
-      else:
-        self.angle = math.pi + (move_vector[0]*math.pi/2)
-      
-    self.physics.update(scene)
-
-    self.check_loading_zone(self.physics.rect, scene, music) #wierd coordinate asyemtry
-
-  def shoot(self, scene):
-        bull = bullet.Bullet((self.rect.center), "trolololololololo", scene.kill_actor)
-        bull.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle), -math.cos(self.angle)))
-        scene.actors[scene.segname].append(bull)  
-
-   def hit(self, actor, framecount):
-    if framecount - self.last_hit > 30:
-      self.last_hit = framecount
-      self.lives += -1
-        
-  def get(self, item: pickup.Item):
-    item.on_pickup(self)
-    if item.PERMANENT:
-      self.items.append(item)
-    
-"""
 blank = pygame.image.load("Art/unknown.png")
 blank = pygame.transform.scale(blank, (0,0))
 
@@ -98,13 +34,11 @@ class Ship:
     self.speed = speed
     self.animation = ani.Animation.from_dir(filename, self.rect.size, ANIMATION_DELAY)
     def f(self): self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, self.velocity)
-    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f)
+    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f, dry_friction = DRY_FRICTION, drag = DRAG)
     self.angle = 0
     self.items = []
-    self.lives = 6
+    self.lives = MAX_HEALTH
     self.accel = ACCELERATION_SPEED
-    self.dry_friction = DRY_FRICTION
-    self.drag = DRAG
     self.last_hit = 0
     self.max_health = MAX_HEALTH
     self.max_speed = MAX_SPEED
@@ -129,9 +63,7 @@ class Ship:
     #accel_vector = scaler_vec_mul(input_vector[0]*ACCELERATION_SPEED, (-math.sin(self.angle), -math.cos(self.angle))) #down is positive y
     accel_vector = scaler_vec_mul(self.accel, move_vector) #down is positive y
     self.physics.accelerate(accel_vector)
-    if magnitude(self.physics.velocity) != 0:
-        friction = min((self.physics.velocity, scaler_vec_mul(self.dry_friction+self.drag*magnitude(self.physics.velocity), normalize(self.physics.velocity))), key=magnitude)
-        self.physics.accelerate(vec_invert(friction))
+    
 
     self.physics.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.physics.velocity) #magi
     #self.angle += input_vector[1]*TURNING_SPEED
@@ -161,6 +93,7 @@ class Ship:
 
 
 class Player(Ship):
+  money = 0 # wtf
   def use_button(self, actors: list[actor.Sprite]): #or inherited from Sprite
     actors = list(filter(lambda x:x.interactable, actors))
     
@@ -193,3 +126,19 @@ class Player(Ship):
     item.on_pickup(self)
     if item.PERMANENT:
       self.items.append(item)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -67,6 +67,9 @@ class Map:
             self.actors = {"Title": [actor.Earth((10*tile,4*tile), self.change_state ,self.kill_actor)]}
             self.state = current_state
             self.segname = None # dont try access the segname if nothing is 
+            self.CAMERA_SHAKE = True
+            self.IS_LEVEL_EDIT = False
+
             
         @property
         def loaded_actors(self) -> list[actor.Sprite]:
@@ -147,10 +150,31 @@ class Map:
             imag = player.render(framecount)
             self.surface.blit(imag, (player.rect.x, player.rect.y))
 
-            if player.last_hit == framecount:
-                window.blit(self.surface, vec2_add(self.pos, (5, 4)))
-            elif player.last_hit + 1 == framecount:
-                window.blit(self.surface, vec2_add(self.pos, (-3, -2)))
+            if not self.IS_LEVEL_EDIT:
+                door_index = tile_types.Tile_type.find("x").index # x is door (yellow wall)
+                if door_index in chain(*self.tiles): 
+                    if not list(filter(lambda x: x.IS_ENEMY and not x.IS_GHOST, self.loaded_actors)):
+                        self.actors[self.segname] = list(filter(lambda x: not x.IS_GHOST, self.actors[self.segname]))
+                        yellow_plate_index = tile_types.Tile_type.find("O").index # O is yellow plate
+                        self.tiles = list(map(lambda y:
+                                              list(map(lambda x: yellow_plate_index if x == door_index else x, y)), self.tiles))
+                
+            
+            if "lives" in player.__dict__.keys():
+                if player.lives <= 0:
+                    player.lives = player.max_health
+                    self.actors = {"Title": [actor.Earth((10*tile,4*tile), self.change_state ,self.kill_actor)]}
+                    self.load_room("Level/tile_map", "Title", music)
+                    self.state = state.State.TITLE
+                    player.items = []
+                
+            if self.CAMERA_SHAKE:
+                if player.last_hit == framecount:
+                    window.blit(self.surface, vec2_add(self.pos, (5, 4)))
+                elif player.last_hit + 1 == framecount:
+                    window.blit(self.surface, vec2_add(self.pos, (-3, -2)))
+                else:
+                    window.blit(self.surface, self.pos)
             else:
                 window.blit(self.surface, self.pos)
             window.blit(bar.draw(BAR_SIZE, framecount, player), (0,0))
@@ -165,6 +189,8 @@ class Map:
                 if i.split("#")[0].replace("\n", "") == segname:
                     break
                 n+=1
+            #print(tex)
+            #print(n, seg, segname)
             seg.pop(n)
             str_loading_info = ";".join(list(map(Loading_zone_cluster.string, self.loading_zone)))
             room_info = segname + "#" + self.convert_to_letters() + "#" + str_loading_info

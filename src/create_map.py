@@ -72,6 +72,7 @@ def dijkstra(graph: Graph[Pos], start: Pos, dest: Pos) -> List[Pos] | None:
 
 def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that central branch needs to be edge branch (i.e only connected to one other branch) and g contains no loops and branches are the only nodes with degree higher than 1 and cannot have degree higher than 4
     start = time.perf_counter()
+    random_rooms.Room.ID = 0 # yes its that bad
     while True:
         try:
             A = [Branch(),Branch(),Branch(), Branch(), Spawn(), Reward(), Reward(), Shop(), Key(), Boss()]
@@ -94,8 +95,7 @@ def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that ce
     for i in rooms:
       transfer_to_file(i, scene, music)
 
-    print([i for i in rooms if isinstance(i.prototype, Spawn) ][0])
-
+   
     populate_rooms(rooms, scene)
     
     end = time.perf_counter()
@@ -121,7 +121,7 @@ def transfer_to_file(room: Room, scene: world.Map, music: music.Music):
     scene.save(FILENAME, str(room.id))
 
 def populate_rooms(rooms: list[Room], scene: world.Map) -> None:
-  actors = [i.prototype.populate((scene.change_state, scene.kill_actor)) for i in rooms]
+  actors = [i.populate((scene.change_state, scene.kill_actor)) for i in rooms]
   for n, i in enumerate(actors):
     for j in i:
       j.pos =vec2_add((7.5*tile,7.5*tile), rotate(rooms[n].orientation, vec2_add((-7.5*tile, -7.5*tile), j.pos)))

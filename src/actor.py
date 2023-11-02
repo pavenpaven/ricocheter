@@ -71,6 +71,7 @@ class Sprite:
   IS_ENEMY = False
   IS_BULLET = False
   IS_GLOBALLY_LOADED = False
+  IS_GHOST = False
   
   def __init__(self, pos, change_state, kill, extra=""):
     #print(pos)

@@ -52,7 +52,7 @@ class Room_prototype:
           raise Exception(f"room prototype {Room_prototype} connected to too many rooms")
       return (self.TILE_SEGNAME, orientations[0])
 
-  def populate(self, create_actor: Actor_constructor) -> list[actor.Sprite]:
+  def populate(self, create_actor: Actor_constructor, room) -> list[actor.Sprite]:
       return [] 
   
 Con = int | None
@@ -71,7 +71,10 @@ class Room:
     
     def to_tiles(self) -> str:
         return "" #FIXME
-        
+    
+    def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+        return self.prototype.populate(constructor, self)
+    
 def link(a:Room, b:Room, orientation: Orientation) -> None: # places 
     a.connections[orientation] = b.id
     b.connections[(orientation+2)%4] = a.id
@@ -100,7 +103,7 @@ class Shop(Room_prototype):
   NAME = "shop room"
   INTERVAL = (1, 1)
   TILE_SEGNAME = Segname("Shop")
-  def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+  def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
       return [pickup.Item_sprite((12.5*tile, 2.5*tile), *constructor, "shopkeeper"),
               pickup.Item_sprite((4.5*tile, 2.5*tile), *constructor, "pancake")]
   
@@ -109,6 +112,10 @@ class Reward(Room_prototype):
   NAME = "reward room"
   INTERVAL = (1, 2)
   TILE_SEGNAME = Segname("Reward")
+
+  def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
+      return [pickup.Item_sprite((3*tile, 6*tile), *constructor, "pancake")]
+
   
 class Spawn(Room_prototype):
   NAME = "spawn room"
@@ -124,7 +131,7 @@ class Key(Room_prototype):
   NAME = "key room"
   INTERVAL = (1, 1)
   TILE_SEGNAME = Segname("Key")
-  def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+  def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
       return [pickup.Item_sprite((7*tile,7*tile), *constructor, "key")]
 
   
@@ -146,7 +153,7 @@ class Branch(Room_prototype):
 
         raise Exception(f"room prototype {Room_prototype} connected to too many rooms or none")
 
-    def populate(self, constructor: Actor_constructor) -> list[actor.Sprite]:
+    def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
         return [enemy.Rammer((7*tile,7*tile), *constructor), enemy.Ghost((0,0), *constructor)]
 
 class Path(Room_prototype):
@@ -157,14 +164,23 @@ class Path(Room_prototype):
         if len(orientations) !=2:
             raise Exception(f"room prototype {Room_prototype} connected to too many rooms or few")
         if orientations[0]%2 == orientations[1]%2:
-            return (Segname(random.choice(["Hallway", "Hallway_thicc", "Hallway_5"])), Orientation(orientations[0] % 2))
+            return (Segname(random.choice(["Hallway", "Hallway_thicc", "Hallway_5", "Battle_room"])), Orientation(orientations[0] % 2))
         if (orientations[0]+1) == orientations[1]:
             x = orientations[0]
         else:
             x = orientations[1]
-        return  (Segname(random.choice(["Hallway_turn", "weirdTurn"])), Orientation(x))
+        return  (Segname(random.choice(["Hallway_turn", "weirdTurn", "Battle_turn"])), Orientation(x))
 
-   
+    def populate(self, constructor: Actor_constructor, room):
+        if room.segname == Segname("Battle_room"):
+            return [enemy.Rammer((7.5*tile, 7.5*tile), *constructor),
+                    enemy.Rammer((1.5*tile, 7.5*tile), *constructor),
+                    enemy.Rammer((13.5*tile, 7.5*tile), *constructor)]
+        if room.segname == Segname("Battle_turn"):
+            return [enemy.Rammer((6*tile, 12*tile), *constructor),
+                    enemy.Rammer((3*tile, 9*tile), *constructor),
+                    enemy.Ghost((7.5*tile,7.5*tile), *constructor)]
+        return []
 
 
 NECESSARY_ROOMS = [Shop, Reward, Spawn, Boss, Key] #branch not in NECESSARY_ROOMS

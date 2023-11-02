@@ -4,6 +4,8 @@ import src.actor as actor
 from src.physics import vec_add, vec_invert, normalize, scaler_vec_mul, magnitude
 from src.player import Ship
 from src.animation import Animation
+from src.pickup import Moving_item
+import random
 from itertools import repeat
 
 
@@ -16,6 +18,7 @@ class Enemy (actor.Animation_sprite):
     IS_ENEMY = True
     LIVES = 1
     DIES_OF_BULLET = True
+    DROPS_MONEY = True
     
     def startup_process(self, extra):
         self.lives = self.LIVES
@@ -29,6 +32,9 @@ class Enemy (actor.Animation_sprite):
                     self.kill(i.index)
         if self.lives <= 0:
             self.kill(self.index)
+            r = random.random
+            for i in range(random.randint(1,3)):
+                scene.actors[scene.segname].append(Moving_item(self.pos, self.change_state, self.kill, f"{14*r() - 7},{14*r()-7},money"))
 
 
 SHADOW = pygame.image.load("Art/shadow_test.png")
@@ -37,8 +43,9 @@ SHADOW = pygame.transform.scale(SHADOW, (tile, tile))
 class Ghost (Enemy):
     anim = ("Art/Cute_npc_vampir_ani", (tile, tile), 4)
     name = "ghost"
-    IS_ENEMY = True
     DIES_OF_BULLET = False
+    IS_GHOST = True
+    DROPS_MONEY = False
     #IS_GLOBALLY_LOADED = True FIXME
 
     def startup_process(self, extra):
@@ -80,13 +87,18 @@ class Rammer (Enemy):
     LIVES = 3
     def startup_process(self, extra):
         self.ship = Ship(self.pos, self.anim[0], self.anim[1], 1) # speed is from jack and jackie
-        self.ship.accel = 0.45
+        self._is_initiated = False
+        self.ship.accel = 0.35
+        self.ship.physics.drag /= 2
         super().startup_process(extra) 
 
     def render(self, scene, framecount):
         scene.blit(self.ship.render(framecount), self.pos)
 
     def step(self, scene, player):
+        if not self._is_initiated:
+            self._is_initiated = True
+            self.ship.physics.rect.topleft = self.pos
         inpu = self.ai(scene, player)
         self.ship.walk(inpu[0], scene, inpu[1], "music") #FIXME this is why you dont pass music evevrywhere
         self.pos = self.ship.rect.topleft
