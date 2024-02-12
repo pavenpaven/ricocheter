@@ -14,7 +14,7 @@ class Animation:
     @classmethod
     def from_dir(cls, directory: str, size: tuple[int, int], *args):
         return cls([pygame.transform.scale(
-                            pygame.image.load(f"{directory}/{i}"), size) 
+                            pygame.image.load(f"{directory}/{i}"), size)
                         for i in sorted(os.listdir(directory),
                                 key = lambda x:int(x.replace(".png", "").split("-")[2]))],
                    size, *args)

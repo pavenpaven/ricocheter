@@ -72,7 +72,7 @@ def dijkstra(graph: Graph[Pos], start: Pos, dest: Pos) -> List[Pos] | None:
 
 def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that central branch needs to be edge branch (i.e only connected to one other branch) and g contains no loops and branches are the only nodes with degree higher than 1 and cannot have degree higher than 4
     start = time.perf_counter()
-    random_rooms.Room.ID = 0 # yes its that bad
+    Room.ID = 0
     while True:
         try:
             A = [Branch(),Branch(),Branch(), Branch(), Spawn(), Reward(), Reward(), Shop(), Key(), Boss()]
@@ -81,9 +81,7 @@ def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that ce
             board = create_board(20)
 
             placement = inductive_branch(g, A[0], A[0:4], None, None, (10,10), board.nodes) + [(A[0], (10,10))]
-            print("Connecting branches")    
             placement = connect_branches(board, Graph(placement, []), [[i] for i in A[0:4]])
-            print("Connecting rooms")
             placement = connect_necessary_rooms(board, placement, A[4:], A[:4])
             rooms = random_rooms.get_rooms(placement)
             break
@@ -189,7 +187,7 @@ def connect_necessary_rooms(board: Graph[Pos], placement: Graph[tuple[Room_proto
     connected_room = shortest_room_path[len(shortest_room_path)-1]
     connected_room = connected_room[0]
     non_connected_rooms.remove(connected_room)
-    print(connected_room)
+
 
     return connect_necessary_rooms(board, placement, non_connected_rooms, branches)
 

@@ -111,10 +111,13 @@ class Shop(Room_prototype):
 class Reward(Room_prototype):
   NAME = "reward room"
   INTERVAL = (1, 2)
-  TILE_SEGNAME = Segname("Reward")
+  TILE_SEGNAME = Segname("Maze") # maybe have "Reward" too
 
   def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
-      return [pickup.Item_sprite((3*tile, 6*tile), *constructor, "pancake")]
+      return [pickup.Item_sprite((5*tile, 5*tile), *constructor, "pancake"),
+              enemy.Rammer((2*tile, 8*tile), *constructor),
+              enemy.Rammer((12*tile, 12*tile), *constructor),
+              enemy.Ghost((12*tile, 12*tile), *constructor)]
 
   
 class Spawn(Room_prototype):
@@ -175,7 +178,8 @@ class Path(Room_prototype):
         if room.segname == Segname("Battle_room"):
             return [enemy.Rammer((7.5*tile, 7.5*tile), *constructor),
                     enemy.Rammer((1.5*tile, 7.5*tile), *constructor),
-                    enemy.Rammer((13.5*tile, 7.5*tile), *constructor)]
+                    enemy.Rammer((13.5*tile, 7.5*tile), *constructor),
+                    enemy.Turret((13.5*tile, 7.5*tile), *constructor)]
         if room.segname == Segname("Battle_turn"):
             return [enemy.Rammer((6*tile, 12*tile), *constructor),
                     enemy.Rammer((3*tile, 9*tile), *constructor),

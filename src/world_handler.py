@@ -13,6 +13,13 @@ def overworld_handler(window, framecount, event_list, music) -> state.State:
   if not scene.tiles:
     scene.load_room("Level/gamefile", None, music)
     print(scene.segname)
+  if "lives" in jack.__dict__.keys():
+    if jack.lives <= 0:
+      globals()["jack"] = player.Player((6.5*tile ,6.5*tile), "Art/Cute_ship_ani_2",(38,38), float(conf.conf_search("speed")))      
+      scene.actors = {"Title": [actor.Earth((10*tile,4*tile), scene.change_state ,scene.kill_actor)]}
+      scene.load_room("Level/tile_map", "Title", music)
+      return state.State.TITLE
+   
   graphics(window, music, framecount)
   check_key(event_list, framecount, music)
   return scene.state
@@ -25,7 +32,7 @@ def check_key(event_list, framecount, music):
   keys = pygame.key.get_pressed()
   pygame.key.set_repeat(1, 100000000)
   if True: #wtf
-    vec = [0,0,0,0]
+    vec = [0,0,0,0,0]
     for i in event_list:
         if i.type == pygame.KEYDOWN:
             if i.key == pygame.K_c:
@@ -38,6 +45,8 @@ def check_key(event_list, framecount, music):
       vec[0] +=1
     if keys[pygame.K_DOWN]:
       vec[0] +=-1
+    if keys[pygame.K_r]:
+      vec[4] = 1
     if keys[pygame.K_s] or keys[pygame.K_z]:
       vec[2] =1
     jack.walk(vec, scene, (-vec[1], -vec[0]), music)
@@ -62,7 +71,6 @@ scene = world.Map((16,16), (0, tile*2), state.State.OVERWORLD)
 
 imag2 = pygame.image.load("Art/jack.png")
 imag2 = pygame.transform.scale(imag2, (20,18))  # lots of globals its essentialy a object or singleton because of the name space idk maybe i should make a class
-
 
 
 jack = player.Player((6.5*tile ,6.5*tile), "Art/Cute_ship_ani_2",(38,38), float(conf.conf_search("speed")))

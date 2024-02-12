@@ -5,6 +5,7 @@ from src.physics import vec_add, vec_invert, normalize, scaler_vec_mul, magnitud
 from src.player import Ship
 from src.animation import Animation
 from src.pickup import Moving_item
+import src.bullet as bullet
 import random
 from itertools import repeat
 
@@ -34,7 +35,7 @@ class Enemy (actor.Animation_sprite):
             self.kill(self.index)
             r = random.random
             for i in range(random.randint(1,3)):
-                scene.actors[scene.segname].append(Moving_item(self.pos, self.change_state, self.kill, f"{14*r() - 7},{14*r()-7},money"))
+                scene.actors[scene.segname].append(Moving_item(self.pos, self.change_state, self.kill, f"{14*r() - 7},{14*r()-7},money")) #14
 
 
 SHADOW = pygame.image.load("Art/shadow_test.png")
@@ -81,6 +82,10 @@ class Ghost (Enemy):
 
         super().step(scene, player)
 
+
+        
+ 
+       
 class Rammer (Enemy):
     name = "rammer"
     anim = ("Art/Cute_enemy_ram_2", (tile, tile), 10)
@@ -110,7 +115,31 @@ class Rammer (Enemy):
         accel = normalize(vec_add(vec_invert(self.ship.rect.center),
                                   player.rect.center))
         
-        return ((0,0,0,0,0,0,0,0,0), accel)          
+        return ((0,0,0,0,0,0,0,0,0), accel)
 
 
-actor.SPRITE_CLASSES += [Enemy, Ghost, Rammer]
+
+TURRET_BODY = pygame.image.load("Art/Cute_enemy_turret_body.png")
+TURRET_BODY = pygame.transform.scale(TURRET_BODY, (tile, tile))
+class Turret (Rammer):
+    name = "turret"
+    anim = ("Art/Cute_enemy_turret_head", (tile,tile), 10)
+ 
+    IS_GHOST = True
+    DIES_OF_BULLET = False
+    DROPS_MONEY = False
+    
+    def startup_process(self, extra):
+        super().startup_process(extra)
+        self.ship.accel = 0
+
+    def render(self, scene, framecount):
+        scene.blit(TURRET_BODY,
+            vec_add(self.ship.rect.center,
+            scaler_vec_mul(-0.5, (tile, tile))))
+        super().render(scene, framecount)
+
+   
+
+
+actor.SPRITE_CLASSES += [Enemy, Ghost, Rammer, Turret]

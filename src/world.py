@@ -69,6 +69,8 @@ class Map:
             self.segname = None # dont try access the segname if nothing is 
             self.CAMERA_SHAKE = True
             self.IS_LEVEL_EDIT = False
+            self.framecount = 0
+            self.opendoor = -10000
 
             
         @property
@@ -120,6 +122,7 @@ class Map:
 
         def render(self, window, player, music, framecount):
             self.surface.fill((0,0,0))
+            self.framecount = framecount
             #self.surface.blit(self.backgrund_tile, (0,0))
             if not self.tiles: #yes i know
                 self.load_room(conf.conf_search("starting_filename"), conf.conf_search("starting_segname"), music)
@@ -152,26 +155,41 @@ class Map:
 
             if not self.IS_LEVEL_EDIT:
                 door_index = tile_types.Tile_type.find("x").index # x is door (yellow wall)
-                if door_index in chain(*self.tiles): 
+                if door_index in chain(*self.tiles) or list(filter(lambda x:x.IS_GHOST, self.loaded_actors)): 
                     if not list(filter(lambda x: x.IS_ENEMY and not x.IS_GHOST, self.loaded_actors)):
                         self.actors[self.segname] = list(filter(lambda x: not x.IS_GHOST, self.actors[self.segname]))
                         yellow_plate_index = tile_types.Tile_type.find("O").index # O is yellow plate
                         self.tiles = list(map(lambda y:
                                               list(map(lambda x: yellow_plate_index if x == door_index else x, y)), self.tiles))
-                
-            
-            if "lives" in player.__dict__.keys():
-                if player.lives <= 0:
-                    player.lives = player.max_health
-                    self.actors = {"Title": [actor.Earth((10*tile,4*tile), self.change_state ,self.kill_actor)]}
-                    self.load_room("Level/tile_map", "Title", music)
-                    self.state = state.State.TITLE
-                    player.items = []
+
+
+            if not self.IS_LEVEL_EDIT:
+                bluewall_index = tile_types.Tile_type.find("G").index
+                redwall_index = tile_types.Tile_type.find("g").index
+                if bluewall_index in chain(*self.tiles) or redwall_index in chain(*self.tiles): 
+                    if not framecount % (96):
+                        blue_plate_index = tile_types.Tile_type.find("d").index # O is yellow plate
+                        red_plate_index = tile_types.Tile_type.find("E").index
+                        self.tiles = list(map(lambda y:
+                                              list(map(lambda x: blue_plate_index if x == bluewall_index else (bluewall_index if x == blue_plate_index else x ), y)), self.tiles))
+                        self.tiles = list(map(lambda y:
+                                              list(map(lambda x: red_plate_index if x == redwall_index else (redwall_index if x == red_plate_index else x ), y)), self.tiles))
+
+
+                if player.open_door:
+                    player.physics.last_hit_tile = tile_types.Tile_type.find("a")
+                    player.open_door = False 
+                    self.opendoor = framecount 
+                    boss_door_index = tile_types.Tile_type.find("U").index
+                    plate_index = tile_types.Tile_type.find("a").index
+                    self.tiles = list(map(lambda y:
+                                          list(map(lambda x: plate_index if x == boss_door_index else x, y)), self.tiles))
+                                    
                 
             if self.CAMERA_SHAKE:
-                if player.last_hit == framecount:
+                if player.last_hit == framecount or self.opendoor == framecount:
                     window.blit(self.surface, vec2_add(self.pos, (5, 4)))
-                elif player.last_hit + 1 == framecount:
+                elif player.last_hit + 1 == framecount or self.opendoor + 1 == framecount:
                     window.blit(self.surface, vec2_add(self.pos, (-3, -2)))
                 else:
                     window.blit(self.surface, self.pos)

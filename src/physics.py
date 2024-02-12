@@ -5,7 +5,7 @@ import math
 from math import floor
 import operator
 from functools import reduce
-from itertools import product
+from itertools import product, chain
 
 
 import src.world as world
@@ -58,6 +58,7 @@ class Physics_object:
         self.on_bounds = on_bounds
         self.dry_friction = dry_friction
         self.drag = drag
+        self.last_hit_tile = None
         
     def accelerate(self, accel_vec: Vec2) -> None:
         #self.velocity = vec_add(self.velocity, 
@@ -71,19 +72,35 @@ class Physics_object:
 
     def update(self, scene: world.Map) -> None:           
         travel_pos = vec_add((self.rect.x, self.rect.y), self.velocity)
-        
+
         hitbox_x = pygame.Rect((travel_pos[0], self.rect.y), self.rect.size)
         hitbox_y = pygame.Rect((self.rect.x, travel_pos[1]), self.rect.size)
         if not NOCLIP[0]: 
             can_go_x, booster_vec = check_collision(hitbox_x, scene)
             can_go_y, _ =           check_collision(hitbox_y, scene)
+            if can_go_x:
+                self.last_hit_tile = can_go_x[0]
+                can_go_x = False                
+            else:
+                can_go_x = True
+            if can_go_y:
+                self.last_hit_tile = can_go_y[0]
+                can_go_y = False
+            else:
+                can_go_y = True
         else:
             booster_vec = (0,0)
             can_go_x = True
             can_go_y = True
         
         self.accelerate(booster_vec)
+        
+        
 
+        #if not check_collision(self.rect, scene)[0]:            
+        #    can_go_x = True
+        #    can_go_y = True
+        
         if magnitude(self.velocity) != 0:
             friction = min((self.velocity, scaler_vec_mul(self.dry_friction + self.drag * magnitude(self.velocity), normalize(self.velocity))), key = magnitude)
             self.accelerate(vec_invert(friction))
@@ -110,12 +127,18 @@ def check_collision(hitbox: pygame.Rect, scene: world.Map) -> tuple[bool, Vec2]:
                           for i in tiles if i.letter in "cCbB"],
                          (0,0))
 
+
+    collisions = list(filter(lambda x: x.collision, tiles))
+
+        
+    
+    
     for i in scene.loaded_actors:
       if i.collision:  
         if hitbox.colliderect(pygame.Rect(i.pos,i.size)):
           can_go = False
 
-    return can_go, booster_vec
+    return collisions, booster_vec
  
 
 def get_touching_tiles(rect: pygame.Rect, scene: world.Map) -> list[Tile_type]: # check that inbounds before use 
