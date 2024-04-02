@@ -39,7 +39,7 @@ SMOKE_4 = ani.Animation.from_dir("Art/Cute_smoke_3_ani", (tile*0.8, tile*0.8), 3
 SHOOT_SOUND = pygame.mixer.Sound("Sound/sfx_shot_player.wav")
 SHOOT_SOUND.set_volume(0.5)
 
-RELOAD_SOUND = pygame.mixer.Sound("Sound/reload.ogg")
+RELOAD_SOUND = pygame.mixer.Sound("Sound/reload.wav")
 RELOAD_SOUND.set_volume(0.5)
 
 class Smoke(actor.Sprite):

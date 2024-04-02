@@ -22,7 +22,7 @@ PICKUP_SOUND.set_volume(0.5)
 MONEY_SOUND = pygame.mixer.Sound("Sound/sfx_coin_beep.wav")
 PICKUP_SOUND.set_volume(0.5)
 
-NOM = pygame.mixer.Sound("Sound/nom.ogg")
+NOM = pygame.mixer.Sound("Sound/nom.wav")
 PICKUP_SOUND.set_volume(0.5)
 
 class Item:
