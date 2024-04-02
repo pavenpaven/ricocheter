@@ -1,4 +1,5 @@
 import pygame
+import math
 import src.player as player
 import src.world as world
 import src.actor as actor
@@ -34,6 +35,9 @@ def overworld_handler(window, framecount, event_list, music) -> state.State:
 def graphics(window, music, framecount):
   scene.render(window, jack, music, framecount)
 
+def dot(v, w):
+  return v[0]*w[0] + v[1]*w[1]
+  
 def check_key(event_list, framecount, music):
   keys = pygame.key.get_pressed()
   pygame.key.set_repeat(1, 100000000)
@@ -68,6 +72,18 @@ def check_key(event_list, framecount, music):
       vec[1] = 0
     if abs(vec[0]) < 0.2:
       vec[0] = 0
+
+    if vec[0] or vec[1]:
+      sq = 1/math.sqrt(2)
+      (vec[0], vec[1]) = max((1,0), (0,1), (-1,0), (0,-1),
+                              (sq, sq), (sq, -sq), (-sq, sq), (-sq, -sq), key = lambda x: dot(x, (vec[0], vec[1])))
+      if vec[0]:
+        vec[0] /= abs(vec[0])
+      if vec[1]:
+        vec[1] /= abs(vec[1])
+
+    
+    
     if controller.get_button(1):
       vec[4] = 1
     if controller.get_button(2):
