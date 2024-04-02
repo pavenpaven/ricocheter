@@ -7,7 +7,7 @@ import src.state as state
 import key
 
 tile = world.tile
-CONTROLLER = conf.conf_search("controller") == "True" 
+CONTROLLER = conf.conf_search("controller") == "true" 
 if CONTROLLER:
   pygame.joystick.init()
   if not pygame.joystick.get_count():
