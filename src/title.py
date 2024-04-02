@@ -1,5 +1,6 @@
 import pygame
 import pygame_menu
+from pygame_menu import sound 
 import src.state as state
 import src.saves as saves
 import src.world_handler as world_handler
@@ -20,6 +21,9 @@ MENU = [None] #i know
 STATE = [None]
 CREDIT_FONT = pygame.font.Font("Art/m3x6.ttf", 50)
 CREDIT_TEXT_SURFACE = CREDIT_FONT.render(credit, False, (0, 0, 0))
+
+engine = sound.Sound()
+engine.set_sound(sound.SOUND_TYPE_WIDGET_SELECTION, 'Sound/sfx_title_click.wav')
 
 them = pygame_menu.themes.THEME_SOLARIZED.copy()
 them.widget_font = CREDIT_FONT
@@ -50,7 +54,8 @@ def get_credit_menu():
 def get_title_menu(change_state):
     credit_menu = get_credit_menu()
 
-    menu = pygame_menu.Menu("the Ricocheter and the Broken Moon", 608, 540, theme = them )
+    menu = pygame_menu.Menu("the Ricocheter and the Broken Moon", 608, 540, theme = them)
+    menu.set_sound(engine, recursive = True)
     a = menu.add.button("Start", c(change_state, state.State.MAP_GEN))
     d = menu.add.button("Load", c(change_state, state.State.OVERWORLD))
     b = menu.add.button("Credits", credit_menu)

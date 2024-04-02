@@ -9,3 +9,5 @@ title_music = Sound/The_Punk_space_age_true_chip.wav
 is_music_on = True
 music_volume = 0.0
 cheats = True
+enemy_accel = 0.3
+enemy_drag_scale = 1.6

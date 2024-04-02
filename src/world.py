@@ -75,8 +75,10 @@ class Map:
             
         @property
         def loaded_actors(self) -> list[actor.Sprite]:
-            return list(dict.fromkeys(self.actors[self.segname]
-                                     + list(filter(lambda x:x.IS_GLOBALLY_LOADED, chain(*self.actors.values())))))
+            if self.segname in self.actors:
+                return list(dict.fromkeys(self.actors[self.segname]
+                                        + list(filter(lambda x:x.IS_GLOBALLY_LOADED, chain(*self.actors.values())))))
+            return []
         def change_state(self, changed_state: state.State) -> None:
           self.state = changed_state
       
@@ -153,7 +155,7 @@ class Map:
             imag = player.render(framecount)
             self.surface.blit(imag, (player.rect.x, player.rect.y))
 
-            if not self.IS_LEVEL_EDIT:
+            if not self.IS_LEVEL_EDIT and self.segname in self.actors:
                 door_index = tile_types.Tile_type.find("x").index # x is door (yellow wall)
                 if door_index in chain(*self.tiles) or list(filter(lambda x:x.IS_GHOST, self.loaded_actors)): 
                     if not list(filter(lambda x: x.IS_ENEMY and not x.IS_GHOST, self.loaded_actors)):

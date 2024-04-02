@@ -4,6 +4,7 @@ import math
 import pygame
 from src.actor import tile
 import src.pickup as pickup
+from src.pickup import display_number
 import src.animation as animation
 from src.fps import FONT
 
@@ -27,6 +28,25 @@ AMMO_HUD_EMPTY = pygame.transform.scale(AMMO_HUD_EMPTY, (tile, tile))
 AMMO_HUD_RELOAD = pygame.image.load("Art/Cute_ammo_hud_reload.png")
 AMMO_HUD_RELOAD = pygame.transform.scale(AMMO_HUD_RELOAD, (tile, tile))
 
+
+
+def render_item(item, framecount):
+    anim = pickup.ITEM_ANIMATIONS[item.__class__]
+    anim.update(framecount)
+    surface = pygame.Surface(anim.texture.get_size(), pygame.SRCALPHA)
+    surface.blit(anim.texture, (0,0))
+    fade_rect         = surface.get_rect().copy()
+    scale_factor      = item.cooldown / item.COOLDOWN
+    y_cord            = fade_rect.height*(1-scale_factor)
+    fade_rect.height *= scale_factor
+
+    rect_surface = pygame.Surface(fade_rect.size, pygame.SRCALPHA)
+    pygame.draw.rect(rect_surface, (100, 100, 100, 200), fade_rect)
+
+    surface.blit(rect_surface, (0, y_cord))
+
+    return surface
+    
 
 def draw(size, framecount: int, player: player.Player):
     surface = pygame.Surface(size)
@@ -56,8 +76,6 @@ def draw(size, framecount: int, player: player.Player):
             
             
     for n,i in enumerate(player.items):
-        anim = pickup.ITEM_ANIMATIONS[i.__class__]
-        anim.update(framecount)
-        surface.blit(anim.texture, (tile*(n + 4), 1))
+        surface.blit(render_item(i, framecount), (tile*(n + 4), 1))
             
     return surface

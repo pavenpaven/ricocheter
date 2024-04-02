@@ -36,6 +36,11 @@ SMOKE_2 = ani.Animation.from_dir("Art/Cute_smoke_1_ani", (tile*0.8, tile*0.8), 3
 SMOKE_3 = ani.Animation.from_dir("Art/Cute_smoke_2_ani", (tile*0.8, tile*0.8), 3)
 SMOKE_4 = ani.Animation.from_dir("Art/Cute_smoke_3_ani", (tile*0.8, tile*0.8), 3)
 
+SHOOT_SOUND = pygame.mixer.Sound("Sound/sfx_shot_player.wav")
+SHOOT_SOUND.set_volume(0.5)
+
+RELOAD_SOUND = pygame.mixer.Sound("Sound/reload.ogg")
+RELOAD_SOUND.set_volume(0.5)
 
 class Smoke(actor.Sprite):
   size = (tile*0.8, tile*0.8)
@@ -74,7 +79,7 @@ class Ship:
       self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, self.velocity)
     self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f, dry_friction = DRY_FRICTION, drag = DRAG)
     self.angle = 0
-    self.items = []
+    self.items = [pickup.Dash()] #not cursed that enemies have dash item maybe i should make them drop items
     self.lives = MAX_HEALTH
     self.accel = ACCELERATION_SPEED
     self.last_hit = 0
@@ -111,12 +116,17 @@ class Ship:
     if (self.magazine <= 0 or input_vector[4]) and (self.reloading <= 0):
       self.reloading = self.reloading_speed + 1
      
-    if self.reloading == 1 and self.magazine < self.magazine_size:
-      self.magazine += 1
-      self.reloading = self.reloading_speed + 1
+    if self.reloading == 1:
+      if self.magazine < self.magazine_size:
+        self.magazine += 1
+        self.reloading = self.reloading_speed + 1
+      else:
+        RELOAD_SOUND.play()        
       
     if self.reloading > 0:
       self.reloading -= 1
+
+      
 
     self.physics.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.physics.velocity) #magi
     #self.angle += input_vector[1]*TURNING_SPEED
@@ -147,15 +157,20 @@ class Ship:
       bull = bullet.Bullet((self.rect.center), "trolololololololo", scene.kill_actor)
       bull.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle), -math.cos(self.angle)))
       scene.actors[scene.segname].append(bull)
+      SHOOT_SOUND.play()
 
   def hit(self, actor, framecount):
     if framecount - self.last_hit > 30:
       self.last_hit = framecount
       self.lives += -1
 
-
+MAX_DASH_SPEED = 5
+dash_accel = 3
+      
 class Player(Ship):
-  money = 0 # wtf 
+  money = 0 # wtf
+  dash = 0
+  dash_cooldown = 0
   def use_button(self, actors: list[actor.Sprite]): #or inherited from Sprite
     actors = list(filter(lambda x:x.interactable, actors))
     
@@ -179,6 +194,15 @@ class Player(Ship):
       offset = (-math.sin(ang)*20, -math.cos(ang)*20)
       vel = scaler_vec_mul(random.randint(3,5), (-math.sin(ang), -math.cos(ang)))
       #scene.actors[scene.segname].insert(0, Smoke(vec_add(offset, self.rect.topleft), scene.change_state, scene.kill_actor, f"{vel[0]},{vel[1]}"))
+    if input_vector[5]:
+      self.items[0].active(self)
+    if self.dash:
+     # self.physics.accelerate(scaler_vec_mul(dash_accel*(1 - magnitude(self.physics.velocity) / MAX_DASH_SPEED), (-math.sin(self.angle), -math.cos(self.angle))))
+      self.physics.accelerate(scaler_vec_mul(dash_accel, (-math.sin(self.angle), -math.cos(self.angle))))
+      self.dash -=1
+    for i in self.items:
+      i.update()
+    
     super().walk(input_vector, scene, move_vector, music)
   
   def check_loading_zone(self, player_hitbox, scene, music):
@@ -190,23 +214,7 @@ class Player(Ship):
         (self.physics.rect.x, self.physics.rect.y) = lz.spawn_pos
 
   def get(self, item: pickup.Item):
+    item.SOUND.play()
     item.on_pickup(self)
     if item.PERMANENT:
       self.items.append(item)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

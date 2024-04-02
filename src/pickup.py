@@ -7,27 +7,65 @@ import src.physics as physics
 from src.fps import FONT
 
 
+
 def scaler_mul(n, v): return (n*v[0], n*v[1])
 
+
+ITEM_DISPLAY_FONT = pygame.font.Font("Art/m3x6.ttf", 30)
 
 SHADOW = pygame.image.load("Art/shadow_test.png")
 SHADOW = pygame.transform.scale(SHADOW, (tile, tile))
 
+PICKUP_SOUND = pygame.mixer.Sound("Sound/sfx_iteam_pickup.wav")
+PICKUP_SOUND.set_volume(0.5)
+
+MONEY_SOUND = pygame.mixer.Sound("Sound/sfx_coin_beep.wav")
+PICKUP_SOUND.set_volume(0.5)
+
+NOM = pygame.mixer.Sound("Sound/nom.ogg")
+PICKUP_SOUND.set_volume(0.5)
+
 class Item:
-    TEXTURE = "pancake"
+    TEXTURE = "Art/Cute_food_panke_beter"
     FRAME_DELAY = 4
     PERMANENT = True
     SPARKLE = True
     SHADOW = True
     PRICE = 0
+    SOUND = PICKUP_SOUND
+    ACTIVE = False
+    COOLDOWN = 1
+    def __init__(self):
+        self.cooldown = 0
+    
     def on_pickup(self, player) -> None:# no type lol
         pass
+
+    def active(self, player):
+        pass
+
+    def update(self):
+        if self.cooldown: 
+            self.cooldown -= 1 
     
+class Dash(Item):
+    PERMANENT = True
+    COOLDOWN = 100
+    
+    def active(self, player):
+        if not self.cooldown:
+            player.dash = 5
+            self.cooldown = self.COOLDOWN
+
+def display_number(n, surface):
+    return surface.blit(FONT.render(str(n), False, (0,0,0)), (10, -10))
+        
     
 class Pancake(Item):
     TEXTURE = "Art/Cute_food_panke_beter"
     FRAME_DELAY = 15
     PERMANENT = False
+    SOUND = NOM
     def on_pickup(self, player) -> None:
         player.lives += 2
     
@@ -55,11 +93,12 @@ class Money(Item):
     PERMANENT = False
     SPARKLE = False
     SHADOW = False
+    SOUND = MONEY_SOUND
 
     def on_pickup(self, player) -> None:
         player.money += 1
     
-ITEM_DICT = {"pancake" : Pancake, "barrel": Barrel, "shopkeeper": Shopkeeper, "key": Key, "money": Money}
+ITEM_DICT = {"pancake" : Pancake, "barrel": Barrel, "shopkeeper": Shopkeeper, "key": Key, "money": Money, "dash": Dash}
 ITEM_ANIMATIONS = dict([(i, Animation.from_dir(i.TEXTURE, (tile, tile), i.FRAME_DELAY)) for i in ITEM_DICT.values()])
 
 sparkle = Animation.from_dir("Art/Cute_item_sparkel", (tile, tile), 5)

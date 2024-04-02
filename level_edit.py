@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import sys
 import pygame
+
+pygame.mixer.init()
+
 import time
 import math
 import src.bar as bar
@@ -15,6 +18,7 @@ MUSIC = music.Music("Level/theme_info")
 MOUSE_MODE = True
 
 pygame.font.init()
+
 
 tile=38
 map_size = (16, 16)

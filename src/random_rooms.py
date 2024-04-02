@@ -111,7 +111,7 @@ class Shop(Room_prototype):
 class Reward(Room_prototype):
   NAME = "reward room"
   INTERVAL = (1, 2)
-  TILE_SEGNAME = Segname("Maze") # maybe have "Reward" too
+  TILE_SEGNAME = Segname("Reward_2") # maybe have "Reward" too
 
   def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
       return [pickup.Item_sprite((5*tile, 5*tile), *constructor, "pancake"),
@@ -172,7 +172,7 @@ class Path(Room_prototype):
             x = orientations[0]
         else:
             x = orientations[1]
-        return  (Segname(random.choice(["Hallway_turn", "weirdTurn", "Battle_turn"])), Orientation(x))
+        return  (Segname(random.choice(["Hallway_turn", "weirdTurn", "Battle_turn", "Battle_turn2"])), Orientation(x))
 
     def populate(self, constructor: Actor_constructor, room):
         if room.segname == Segname("Battle_room"):
@@ -180,7 +180,7 @@ class Path(Room_prototype):
                     enemy.Rammer((1.5*tile, 7.5*tile), *constructor),
                     enemy.Rammer((13.5*tile, 7.5*tile), *constructor),
                     enemy.Turret((13.5*tile, 7.5*tile), *constructor)]
-        if room.segname == Segname("Battle_turn"):
+        if room.segname == Segname("Battle_turn") or room.segname == Segname("Battle_turn2"):
             return [enemy.Rammer((6*tile, 12*tile), *constructor),
                     enemy.Rammer((3*tile, 9*tile), *constructor),
                     enemy.Ghost((7.5*tile,7.5*tile), *constructor)]

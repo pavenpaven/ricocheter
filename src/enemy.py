@@ -5,6 +5,7 @@ from src.physics import vec_add, vec_invert, normalize, scaler_vec_mul, magnitud
 from src.player import Ship
 from src.animation import Animation
 from src.pickup import Moving_item
+import src.conf as conf
 import src.bullet as bullet
 import random
 from itertools import repeat
@@ -93,8 +94,8 @@ class Rammer (Enemy):
     def startup_process(self, extra):
         self.ship = Ship(self.pos, self.anim[0], self.anim[1], 1) # speed is from jack and jackie
         self._is_initiated = False
-        self.ship.accel = 0.35
-        self.ship.physics.drag /= 2
+        self.ship.accel = float(conf.conf_search("enemy_accel"))
+        self.ship.physics.drag /= float(conf.conf_search("enemy_drag_scale"))
         super().startup_process(extra) 
 
     def render(self, scene, framecount):
