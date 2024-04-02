@@ -7,6 +7,12 @@ import src.state as state
 import key
 
 tile = world.tile
+CONTROLLER = conf.conf_search("controller") == "True" 
+if CONTROLLER:
+  pygame.joystick.init()
+  if not pygame.joystick.get_count():
+    raise Exception("Couldn't find controller, if you dont want to use controller change 'controller' attribute in conf.txt file")
+  controller = pygame.joystick.Joystick(0)
 
 def overworld_handler(window, framecount, event_list, music) -> state.State:
   scene.state = state.State.OVERWORLD
@@ -31,7 +37,7 @@ def graphics(window, music, framecount):
 def check_key(event_list, framecount, music):
   keys = pygame.key.get_pressed()
   pygame.key.set_repeat(1, 100000000)
-  if True: #wtf
+  if not CONTROLLER: #wtf
     vec = [0,0,0,0,0,0]
     for i in event_list:
         if i.type == pygame.KEYDOWN:
@@ -51,12 +57,33 @@ def check_key(event_list, framecount, music):
       vec[2] =1
     if keys[pygame.K_q]:
       vec[5] = 1
-    jack.walk(vec, scene, (-vec[1], -vec[0]), music)
-  if key.is_keydown(event_list, "x", framecount):
-    jack.use_button(scene.actors)
+    
+ # if key.is_keydown(event_list, "x", framecount):
+  #  jack.use_button(scene.actors)
+  else:
+    vec = [0,0,0,0,0,0]
+    vec[1] = -controller.get_axis(0)
+    vec[0] = -controller.get_axis(1)
+    if abs(vec[1]) < 0.2:
+      vec[1] = 0
+    if abs(vec[0]) < 0.2:
+      vec[0] = 0
+    if controller.get_button(1):
+      vec[4] = 1
+    if controller.get_button(2):
+      vec[2] =1
+    if controller.get_button(3):
+      vec[5] = 1
+    for i in event_list:
+      if i.type == pygame.JOYBUTTONDOWN:
+        if i.button == 0:
+          vec[3] = 1
+  jack.walk(vec, scene, (-vec[1], -vec[0]), music)
 
+  
   if key.is_keydown(event_list, "o", framecount) and is_cheats_on:
       world_commands(music)
+  
 
 is_cheats_on = conf.conf_search("cheats")=="True"
 
