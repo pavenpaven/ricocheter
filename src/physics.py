@@ -51,7 +51,7 @@ def reduce_magnitude(x: int, y: Vec) -> Vec:
     pass
 
 class Physics_object:
-    def __init__(self, rect: pygame.Rect, velocity: Vec2, max_speed = 15, on_bounds: Callable[[Physics_object], None] = lambda x:None, dry_friction = 0, drag = 0):
+    def __init__(self, rect: pygame.Rect, velocity: Vec2, max_speed = 15, on_bounds: Callable[[Physics_object], None] = lambda x:None, dry_friction = 0, drag = 0, velocity_scaler = 1):
         self.velocity = velocity
         self.rect = rect
         self.max_speed = max_speed
@@ -59,6 +59,7 @@ class Physics_object:
         self.dry_friction = dry_friction
         self.drag = drag
         self.last_hit_tile = None
+        self.velocity_scaler = velocity_scaler
         
     def accelerate(self, accel_vec: Vec2) -> None:
         #self.velocity = vec_add(self.velocity, 
@@ -71,7 +72,7 @@ class Physics_object:
 
 
     def update(self, scene: world.Map) -> None:           
-        travel_pos = vec_add((self.rect.x, self.rect.y), self.velocity)
+        travel_pos = vec_add((self.rect.x, self.rect.y), scaler_vec_mul(self.velocity_scaler, self.velocity))
 
         hitbox_x = pygame.Rect((travel_pos[0], self.rect.y), self.rect.size)
         hitbox_y = pygame.Rect((self.rect.x, travel_pos[1]), self.rect.size)

@@ -23,8 +23,11 @@ MAX_SPEED = 15
 BOUNDS_SLOWDOWN = 0.8
 DRY_FRICTION = 0.1
 DRAG = 0.02
+VEL_SCALER = 0.8
 MAX_HEALTH = 10
 SHOOT_COOLDOWN = 15
+MINIGUN_ANGLE_SHIFT = 2*math.pi/30
+MINIGUN_VARIATION = 0.1
 
 
 blank = pygame.image.load("Art/unknown.png")
@@ -67,7 +70,16 @@ class Smoke(actor.Sprite):
       self.tex.update(framecount)
       scene.blit(self.tex.texture, self.pos)
     
-    
+
+class Counter:
+  def __init__(self):
+    self.value = 0
+
+  def tick(self):
+    self.value += 1
+
+  def reset(self):
+    self.value = 0
 
 
 class Ship:
@@ -75,9 +87,7 @@ class Ship:
     self.rect = pygame.Rect(pos, proporsion)
     self.speed = speed
     self.animation = ani.Animation.from_dir(filename, self.rect.size, ANIMATION_DELAY)
-    def f(self):
-      self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, self.velocity)
-    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = f, dry_friction = DRY_FRICTION, drag = DRAG)
+    self.physics = physics.Physics_object(self.rect.copy(), (0, 0), max_speed = MAX_SPEED, on_bounds = self.f, dry_friction = DRY_FRICTION, drag = DRAG, velocity_scaler = VEL_SCALER)
     self.angle = 0
     self.items = [pickup.Dash()] #not cursed that enemies have dash item maybe i should make them drop items
     self.lives = MAX_HEALTH
@@ -92,7 +102,19 @@ class Ship:
     self.reloading = 0
     self.reloading_speed = 15
     self.open_door = False
+    self.is_breaking = False
+    self.using_shotgun = False
+    self.using_sniper = False
+    self.bullet_bounds = 2
+    self.consecutive_hit_counter = Counter()
 
+
+    
+  def f(self, phys):
+    if self.is_breaking:
+      phys.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN*0.3, phys.velocity)
+    else:
+      self.velocity = scaler_vec_mul(BOUNDS_SLOWDOWN, phys.velocity)
     
   def render(self, framecount):
     self.animation.update(framecount)
@@ -127,7 +149,7 @@ class Ship:
       self.reloading -= 1
 
       
-
+    self.is_breaking = input_vector[2]
     self.physics.velocity = scaler_vec_mul(1/ (1 + (BREAK_DIVISION - 1)*input_vector[2]), self.physics.velocity) #magi
     #self.angle += input_vector[1]*TURNING_SPEED
     if move_vector[0] or move_vector[1]:
@@ -154,9 +176,26 @@ class Ship:
     if not self.shoot_on_cooldown and self.reloading <= 0 and self.magazine > 0:
       self.magazine -= 1
       self.shoot_on_cooldown = self.shoot_cooldown
-      bull = bullet.Bullet((self.rect.center), "trolololololololo", scene.kill_actor)
-      bull.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle), -math.cos(self.angle)))
-      scene.actors[scene.segname].append(bull)
+      if not self.using_shotgun:
+        bull = bullet.Bullet((self.rect.center), "", scene.kill_actor)
+        bull.COUNTER = self.consecutive_hit_counter
+        bull.MAX_BOUNDS = self.bullet_bounds
+        bull.DAMAGE = 1 + self.using_sniper * (self.consecutive_hit_counter.value > 2)
+        bull.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle), -math.cos(self.angle)))
+        scene.actors[scene.segname].append(bull)
+      else:
+        bull1 = bullet.Bullet((self.rect.center), "", scene.kill_actor)
+        bull1.MAX_BOUNDS = self.bullet_bounds
+        bull1.DAMAGE = 1 + self.using_sniper * (self.consecutive_hit_counter.value > 2)
+        r = random.random()*MINIGUN_VARIATION - (MINIGUN_VARIATION/2)
+        bull1.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle + MINIGUN_ANGLE_SHIFT + r), -math.cos(self.angle + MINIGUN_ANGLE_SHIFT + r)))        
+        scene.actors[scene.segname].append(bull1)
+        r = random.random()*MINIGUN_VARIATION - (MINIGUN_VARIATION/2)
+        bull2 = bullet.Bullet((self.rect.center), "", scene.kill_actor)
+        bull2.MAX_BOUNDS = self.bullet_bounds
+        bull2.DAMAGE = 1 + self.using_sniper * (self.consecutive_hit_counter.value > 2)
+        bull2.physics.velocity = scaler_vec_mul(40, (-math.sin(self.angle - MINIGUN_ANGLE_SHIFT + r), -math.cos(self.angle - MINIGUN_ANGLE_SHIFT + r)))
+        scene.actors[scene.segname].append(bull2)
       SHOOT_SOUND.play()
 
   def hit(self, actor, framecount):
@@ -194,8 +233,10 @@ class Player(Ship):
       offset = (-math.sin(ang)*20, -math.cos(ang)*20)
       vel = scaler_vec_mul(random.randint(3,5), (-math.sin(ang), -math.cos(ang)))
       #scene.actors[scene.segname].insert(0, Smoke(vec_add(offset, self.rect.topleft), scene.change_state, scene.kill_actor, f"{vel[0]},{vel[1]}"))
-    if input_vector[5]:
-      self.items[0].active(self)
+    for i in range(5):
+      if input_vector[5+i]:
+        if len(self.items) > i:
+          self.items[i].active(self) 
     if self.dash:
      # self.physics.accelerate(scaler_vec_mul(dash_accel*(1 - magnitude(self.physics.velocity) / MAX_DASH_SPEED), (-math.sin(self.angle), -math.cos(self.angle))))
       self.physics.accelerate(scaler_vec_mul(dash_accel, (-math.sin(self.angle), -math.cos(self.angle))))

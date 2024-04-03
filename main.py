@@ -2,6 +2,7 @@ import pygame
 pygame.init()
 pygame.display.init()
 window = pygame.display.set_mode((608,700), pygame.DOUBLEBUF, 32)
+pygame.mixer.init()
 
 import math
 import sys

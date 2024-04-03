@@ -35,8 +35,11 @@ class Item:
     SOUND = PICKUP_SOUND
     ACTIVE = False
     COOLDOWN = 1
-    def __init__(self):
+
+    def __init__(self, free = False):
         self.cooldown = 0
+        if free:
+            self.PRICE = 0
     
     def on_pickup(self, player) -> None:# no type lol
         pass
@@ -50,12 +53,29 @@ class Item:
     
 class Dash(Item):
     PERMANENT = True
+    ACTIVE = True
     COOLDOWN = 100
     
     def active(self, player):
         if not self.cooldown:
             player.dash = 5
             self.cooldown = self.COOLDOWN
+
+class Shotgun(Item):
+    PERMANENT = True
+
+    def on_pickup(self, player):
+        player.using_shotgun = True
+        player.bullet_bounds -= 1
+
+class Sniper(Item):
+    PERMANENT = True
+
+    def on_pickup(self, player):
+        player.using_sniper = True
+        player.shoot_cooldown += 5
+    
+    
 
 def display_number(n, surface):
     return surface.blit(FONT.render(str(n), False, (0,0,0)), (10, -10))
@@ -82,6 +102,14 @@ class Shopkeeper(Item):
         player.physics.dry_friction *= 1.8
         player.physics.drag *= 1.8
 
+class Magazine(Item):
+    TEXTURE = "Art/Cute_shell"
+    PRICE = 15
+
+    def on_pickup(self, player):
+        player.magazine_size += 1
+    
+
         
 class Key(Item):
     TEXTURE = "Art/Cute_key_ani"
@@ -98,7 +126,7 @@ class Money(Item):
     def on_pickup(self, player) -> None:
         player.money += 1
     
-ITEM_DICT = {"pancake" : Pancake, "barrel": Barrel, "shopkeeper": Shopkeeper, "key": Key, "money": Money, "dash": Dash}
+ITEM_DICT = {"pancake" : Pancake, "barrel": Barrel, "shopkeeper": Shopkeeper, "key": Key, "money": Money, "dash": Dash, "magazine": Magazine, "shotgun": Shotgun, "sniper": Sniper}
 ITEM_ANIMATIONS = dict([(i, Animation.from_dir(i.TEXTURE, (tile, tile), i.FRAME_DELAY)) for i in ITEM_DICT.values()])
 
 sparkle = Animation.from_dir("Art/Cute_item_sparkel", (tile, tile), 5)
@@ -111,7 +139,7 @@ def gen_price_tag(price : int) -> pygame.Surface:
 class Item_sprite(actor.Animation_sprite):
     size = (tile, tile)
     name = "item"
-
+    
     def render(self, scene, framecount):
         if self.item.SHADOW:
             scene.blit(SHADOW, (self.pos[0], self.pos[1] + 5))

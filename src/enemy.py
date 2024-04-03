@@ -30,7 +30,10 @@ class Enemy (actor.Animation_sprite):
         for i in scene.loaded_actors:
             if i.IS_BULLET and self.DIES_OF_BULLET:
                 if self.rect.colliderect(i.rect):
-                    self.lives -= 1
+                    self.lives -= i.DAMAGE
+                    if i.COUNTER:
+                        i.COUNTER.tick() 
+                        print(i.COUNTER.value )
                     self.kill(i.index)
         if self.lives <= 0:
             self.kill(self.index)

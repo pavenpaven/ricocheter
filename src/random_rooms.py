@@ -114,10 +114,16 @@ class Reward(Room_prototype):
   TILE_SEGNAME = Segname("Reward_2") # maybe have "Reward" too
 
   def populate(self, constructor: Actor_constructor, room) -> list[actor.Sprite]:
+      a = pickup.Item_sprite((1*tile, 14*tile), *constructor, "magazine")
+      b = pickup.Item_sprite((14*tile, 14*tile), *constructor, "magazine")
+      a.partner = b.index
+      b.partner = a.index
+
+      
       return [pickup.Item_sprite((5*tile, 5*tile), *constructor, "pancake"),
               enemy.Rammer((2*tile, 8*tile), *constructor),
               enemy.Rammer((12*tile, 12*tile), *constructor),
-              enemy.Ghost((12*tile, 12*tile), *constructor)]
+              enemy.Ghost((12*tile, 12*tile), *constructor), a, b]
 
   
 class Spawn(Room_prototype):
@@ -195,3 +201,6 @@ def random_amount_rooms() -> List[tuple[type[Room_prototype], int]]:
     return list(map(lambda x:(x, random.randint(*x.INTERVAL)), NECESSARY_ROOMS))
 
 #def random_amount_
+
+
+#class Item_distributor

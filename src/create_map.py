@@ -75,8 +75,8 @@ def generate_map(scene: world.Map, music: music.Music) -> Segname: #Note that ce
     Room.ID = 0
     while True:
         try:
-            A = [Branch(),Branch(),Branch(), Branch(), Spawn(), Reward(), Reward(), Shop(), Key(), Boss()]
-            g = Graph[Room_prototype](A, [(A[0],A[1]),(A[1],A[0]),(A[1],A[2]),(A[2],A[1]), (A[2], A[3]), (A[3], A[2]),  (A[3],A[4]), (A[4], A[3]), (A[3],A[5]), (A[0], A[6]), (A[2], A[7]), (A[0], A[8]), (A[1], A[9])])
+            A = [Branch(),Branch(),Branch(), Branch(), Spawn(), Reward(), Reward(), Shop(), Key(), Boss(), Shop()]
+            g = Graph[Room_prototype](A, [(A[0],A[1]),(A[1],A[0]),(A[1],A[2]),(A[2],A[1]), (A[2], A[3]), (A[3], A[2]),  (A[3],A[4]), (A[4], A[3]), (A[3],A[5]), (A[0], A[6]), (A[2], A[7]), (A[0], A[8]), (A[1], A[9]), (A[10], A[1]), (A[1], A[10])])
 
             board = create_board(20)
 

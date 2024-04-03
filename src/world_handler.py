@@ -5,10 +5,14 @@ import src.world as world
 import src.actor as actor
 import src.conf as conf
 import src.state as state
+import src.pickup as pickup
 import key
 
 tile = world.tile
-CONTROLLER = conf.conf_search("controller") == "true" 
+
+CONTROLLER_SLOTS = [int(conf.conf_search(f"controller_slot{n+1}")) for n in range(5)]
+
+CONTROLLER = conf.conf_search("controller") == "true"
 if CONTROLLER:
   pygame.joystick.init()
   if not pygame.joystick.get_count():
@@ -45,27 +49,26 @@ def check_key(event_list, framecount, music):
     vec = [0,0,0,0,0,0]
     for i in event_list:
         if i.type == pygame.KEYDOWN:
-            if i.key == pygame.K_c:
+            if i.key == pygame.K_a:
                 vec[3]=1
-    if keys[pygame.K_a] or keys[pygame.K_LEFT]:
+    if keys[pygame.K_LEFT] or keys[pygame.K_l] :
       vec[1]+=1
-    if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+    if keys[pygame.K_RIGHT] or keys[pygame.K_j]:
       vec[1]+=-1
-    if keys[pygame.K_w] or keys[pygame.K_UP]:
+    if keys[pygame.K_UP] or keys[pygame.K_i]:
       vec[0] +=1
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_DOWN] or keys[pygame.K_k]:
       vec[0] +=-1
-    if keys[pygame.K_r]:
+    if keys[pygame.K_d]:
       vec[4] = 1
     if keys[pygame.K_s] or keys[pygame.K_z]:
       vec[2] =1
-    if keys[pygame.K_q]:
-      vec[5] = 1
+    vec[5:] = [keys[pygame.K_q], keys[pygame.K_w], keys[pygame.K_e], keys[pygame.K_r], keys[pygame.K_f]]
     
  # if key.is_keydown(event_list, "x", framecount):
   #  jack.use_button(scene.actors)
   else:
-    vec = [0,0,0,0,0,0]
+    vec = [0,0,0,0,0,0,0,0,0,0,0]
     vec[1] = -controller.get_axis(0)
     vec[0] = -controller.get_axis(1)
     if abs(vec[1]) < 0.2:
@@ -84,15 +87,16 @@ def check_key(event_list, framecount, music):
 
     
     
-    if controller.get_button(1):
+    if controller.get_button(int(conf.conf_search("controller_reload"))):
       vec[4] = 1
-    if controller.get_button(2):
+    if controller.get_button(int(conf.conf_search("controller_break"))):
       vec[2] =1
-    if controller.get_button(3):
-      vec[5] = 1
+
+    vec[5:] = list(map(controller.get_button, CONTROLLER_SLOTS))
+      
     for i in event_list:
       if i.type == pygame.JOYBUTTONDOWN:
-        if i.button == 0:
+        if i.button == int(conf.conf_search("controller_shoot")):
           vec[3] = 1
   jack.walk(vec, scene, (-vec[1], -vec[0]), music)
 
@@ -109,6 +113,8 @@ def world_commands(music):
         scene.load_room("Level/tile_map", command.split(" ")[1], music)
     if command.startswith("noclip "):
         player.NOCLIP[0] = int(command.split(" ")[1])
+    if command.startswith("give "):
+      jack.get(pickup.ITEM_DICT[command.split(" ")[1]]())
         
 
 scene = world.Map((16,16), (0, tile*2), state.State.OVERWORLD)
